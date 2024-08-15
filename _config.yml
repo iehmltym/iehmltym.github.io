@@ -4,70 +4,79 @@ SEOTitle: iehmltymのBlog | ZYY Blog
 header-img: img/home-bg.jpg
 email: iehmltym@gmail.com
 description: "日本のプログラマー@iehmltymの個人ブログ。技術と創造性の融合を探求します。"
-keyword: ""iehmltym, テックブログ, プログラミング, 日本, ソフトウェア開発, Web開発, AI, Web,JAVA，Angular，JavaScript, React, React Native"
-url: "https://iehmltym.github.io" 
+keyword: "iehmltym, テックブログ, プログラミング, 日本, ソフトウェア開発, Web開発, AI, JavaScript, React, React Native"
+url: "https://iehmltym.github.io" # your host, for absolute URL
 baseurl: "" # for example, '/blog' if your blog hosted on 'host/blog'
-
 # Publish posts or collection documents with a future date.
 future: true
 # SNS settings
 RSS: false
-twitter_username: iehmltym
+weibo_username: iehmltym
+zhihu_username: iehmltym
 github_username: iehmltym
-qiita_username: iehmltym
-
+twitter_username: iehmltym
+#facebook_username:  iehmltym
+#linkedin_username:  firstname-lastname-idxxxx
 # Build settings
+# from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
 highlighter: rouge
 permalink: pretty
 paginate: 10
-exclude: ["less", "node_modules", "Gruntfile.js", "package.json", "README.md"]
-anchorjs: true
-
-# Timezone setting for Japan
-timezone: Asia/Tokyo
-
+exclude:
+  [
+    "less",
+    "node_modules",
+    "Gruntfile.js",
+    "package.json",
+    "README.md",
+    "README.zh.md",
+  ]
+anchorjs: true # if you want to customize anchor. check out line:181 of post.html
+# If you have timezone issue (e.g. #68) in China, uncomment to use this:
+#timezone: CN
 # Gems
+# from PR#40, to support local preview for Jekyll 3.0
+# make sure you have this gem installed
+# $ gem install jekyll-paginate
 plugins: [jekyll-paginate]
-
 # Markdown settings
+# replace redcarpet to kramdown,
+# although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
+# document: http://jekyllrb.com/docs/configuration/#kramdown
 markdown: kramdown
 kramdown:
-  input: GFM
+  input: GFM # use Github Flavored Markdown !important
   syntax_highlighter_opts:
     span:
       line_numbers: false
     block:
       line_numbers: true
       start_line: 1
-
 # Disqus settings
-disqus_username: iehmltym
-
+disqus_username: hux
+# Netease settings
+netease_comment: false
 # Analytics settings
+# Baidu Analytics
+# ba_track_id: [your track id]
 # Google Analytics
-ga_track_id: "UA-XXXXXXXX-X" # Replace with your Google Analytics tracking ID
-ga_domain: iehmltym.com
-
+ga_track_id: "UA-49627206-1" # Format: UA-xxxxxx-xx
+ga_domain: iehmltym.me
 # Sidebar settings
-sidebar: true
+sidebar: true # whether or not using Sidebar.
 sidebar-about-description: "クリエイティブなソリューションを追求する日本のソフトウェアエンジニア"
-sidebar-avatar: https://github.com/iehmltym.png # Replace with your GitHub profile picture URL
-
+sidebar-avatar: https://github.com/iehmltym.png # use absolute URL, seeing it's used in both / and /about/
 # Featured Tags
-featured-tags: true
-featured-condition-size: 1
-
+featured-tags: true # whether or not using Feature-Tags
+featured-condition-size: 1 # A tag will be featured if the size of it is more than this condition value
 # Progressive Web Apps
 chrome-tab-theme-color: "#000000"
 service-worker: true
-
 # MathJax rendering for layout:page (e.g. post preview)
 page-mathjax: false
-
 # Friends
-friends: [
-  { title: "WU sann", href: "http://wusann.com/" },
- # { title: "Sakura Tanaka", href: "https://sakuratanaka.dev/" },
- # { title: "Hiroshi Sato", href: "http://hiroshisato.jp" },
- # { title: "Yuki Nakamura", href: "https://yukinakamura.me/" },
-]
+friends:
+  [
+    { title: "乱序（Midare）", href: "http://mida.re/" },
+   
+  ]
