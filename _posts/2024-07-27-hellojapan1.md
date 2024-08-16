@@ -1,6 +1,6 @@
 ---
 layout:       post
-title:        "日本語学習ノート(1)：オンライン授業の洞察"
+title:        "日本語学習(1)：オンライン授業の洞察"
 author:       "張"
 header-style: text
 catalog:      true
