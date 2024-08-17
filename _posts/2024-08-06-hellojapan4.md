@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "日本語学習(4)：システムの開発"
-author: "張"
+author: "iehmltym（張）"
 date: 2024-08-06
 header-style: text
 catalog: true
