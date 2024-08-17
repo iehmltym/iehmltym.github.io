@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "日本語学習（3） - 授業内容、文化洞察、実践経験の詳細記録"
-author: "張"
+author: "iehmltym（張）"
 date: 2024-08-03
 header-style: text
 catalog: true
