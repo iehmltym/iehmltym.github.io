@@ -1,6 +1,6 @@
 ---
 layout:       post
-title:        "日本語学習（7）：ビジネス日本語と文化交流"
+title:        "日本語学習（0）：ビジネス日本語と文化交流"
 date:         2023-08-17
 author:       "iehmltym（張）"
 header-img:   "img/post-bg-japanese-lesson.jpg"
