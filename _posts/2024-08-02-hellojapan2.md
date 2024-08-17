@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "日本語学習（2）：授業内容と文化洞察の完全記録"
-author: "張"
+author: "iehmltym（張）"
 header-style: text
 catalog: true
 tags:
