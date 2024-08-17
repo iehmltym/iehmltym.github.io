@@ -1,7 +1,7 @@
 ---
 layout:       post
 title:        "日本語学習(1)：オンライン授業の洞察"
-author:       "張"
+author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
