@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "日本語学習(５)：日常生活、文化、夏のノート"
-author: "張"
+author: "iehmltym（張）"
 date: 2024-08-13
 header-style: text
 catalog: true
