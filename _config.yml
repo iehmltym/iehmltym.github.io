@@ -80,3 +80,8 @@ friends:
     { title: "乱序（Midare）", href: "http://mida.re/" },
    
   ]
+# 在这里添加密码保护配置
+# Password Protection
+password_protection:
+  enabled: true
+  password: 1113  # 将这里的 your_password_here 替换为你想要的密码
