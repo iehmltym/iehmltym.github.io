@@ -6,6 +6,27 @@
 <!-- hack iOS CSS :active style -->
 <body ontouchstart="">
 
+
+<!--     密码 s-->
+<script>
+        (function() {
+            var storedAuth = localStorage.getItem('blog_auth');
+            var sitePassword = '1113'; // 使用你在 _config.yml 中设置的密码
+            
+            if (storedAuth !== 'true') {
+                var userPassword = prompt('请输入密码访问博客:');
+                if (userPassword === sitePassword) {
+                    localStorage.setItem('blog_auth', 'true');
+                } else {
+                    alert('密码错误');
+                    window.location.reload();
+                }
+            }
+        })();
+    </script>
+
+<!--     密码 e-->
+
     {% include nav.html %}
     {% include search.html %}
 
