@@ -92,4 +92,4 @@ password_protection:
       path: ""
       type: "posts"
     values:
-      image_path: "/assets/img"
+      image_path: "/assets"
