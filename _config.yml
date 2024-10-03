@@ -84,7 +84,7 @@ friends:
 # Password Protection
 password_protection:
   enabled: true
-  password: 1113  # 将这里的 your_password_here 替换为你想要的密码
+  password: 0816  # 将这里的 your_password_here 替换为你想要的密码
 
 
   defaults:
