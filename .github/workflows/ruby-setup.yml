@@ -12,8 +12,8 @@ on:
 jobs:
   # 作业名称
   setup-and-test:
-    # 指定作业运行的环境（这里使用自托管的运行器）
-    runs-on: self-hosted
+    # 指定作业运行的环境（将使用 GitHub 提供的标准 Ubuntu 运行器，而不是自托管运行器）
+    runs-on: ubuntu-latest
     
     # 定义作业的步骤
     steps:
