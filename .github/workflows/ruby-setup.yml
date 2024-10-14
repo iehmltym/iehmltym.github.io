@@ -1,0 +1,62 @@
+# 工作流的名称，会显示在 GitHub Actions 页面上
+name: Ruby Setup and Test
+
+# 定义何时触发这个工作流
+on:
+  push:
+    branches: [ main ]  # 当推送到 main 分支时触发
+  pull_request:
+    branches: [ main ]  # 当对 main 分支发起拉取请求时触发
+
+# 定义工作流中的作业
+jobs:
+  # 作业名称
+  setup-and-test:
+    # 指定作业运行的环境（这里使用自托管的运行器）
+    runs-on: self-hosted
+    
+    # 定义作业的步骤
+    steps:
+    # 步骤1：检出代码
+    - uses: actions/checkout@v2
+      
+    # 步骤2：设置 Ruby
+    - name: Set up Ruby
+      run: |
+        # 克隆 ruby-build 仓库
+        git clone https://github.com/rbenv/ruby-build.git
+        cd ruby-build
+        # 安装 ruby-build
+        sudo ./install.sh
+        # 创建 Ruby 安装目录
+        sudo mkdir -p /opt/hostedtoolcache/Ruby/3.1.4/x64
+        # 使用 ruby-build 安装指定版本的 Ruby
+        sudo ruby-build 3.1.4 /opt/hostedtoolcache/Ruby/3.1.4/x64
+        # 标记安装完成
+        sudo touch /opt/hostedtoolcache/Ruby/3.1.4/x64.complete
+        # 将 Ruby 路径添加到环境变量
+        echo 'export PATH="/opt/hostedtoolcache/Ruby/3.1.4/x64/bin:$PATH"' >> $GITHUB_ENV
+      
+    # 步骤3：验证 Ruby 版本
+    - name: Check Ruby version
+      run: ruby --version
+      
+    # 步骤4：安装依赖（如果你的项目使用 Bundler）
+    - name: Install dependencies
+      run: |
+        gem install bundler
+        bundle install
+      
+    # 步骤5：运行测试
+    - name: Run tests
+      run: |
+        # 这里替换为你的实际测试命令
+        ruby -e "puts 'Running tests...'; exit 0"
+        # 如果使用 RSpec，可以用下面的命令：
+        # bundle exec rspec
+      
+    # 步骤6：运行 Linter（可选，如果你使用 RuboCop）
+    - name: Run linter
+      run: |
+        gem install rubocop
+        rubocop
