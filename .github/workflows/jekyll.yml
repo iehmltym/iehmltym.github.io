@@ -1,4 +1,3 @@
-```yaml
 # Jekyll 站点部署到 GitHub Pages 的工作流配置
 name: Deploy Jekyll site to Pages
 
