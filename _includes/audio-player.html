@@ -1,0 +1,21 @@
+<!-- _includes/audio-player.html -->
+<div class="audio-player">
+  <div class="player-header">
+    <h2>{{ include.title }}</h2>
+    <span class="duration">{{ include.duration }}</span>
+  </div>
+  
+  <audio id="{{ include.id }}" preload="metadata">
+    <source src="{{ include.src }}" type="audio/mpeg">
+  </audio>
+  
+  <div class="player-controls">
+    <button class="audio-btn" onclick="document.getElementById('{{ include.id }}').play()">
+      <i class="fas fa-play"></i>
+    </button>
+    <div class="progress">
+      <div class="progress-bar"></div>
+    </div>
+    <span class="time">0:00</span>
+  </div>
+</div>
