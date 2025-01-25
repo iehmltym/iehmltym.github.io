@@ -284,6 +284,21 @@ function changeVolume(id, value) {
  }
 }
 
+
+ 
+ function setupDragSeek(id) {
+  const audio = document.getElementById(id);
+  const progress = audio.parentElement.querySelector('.progress');
+  let isDragging = false;
+
+  // 开始拖动
+  progress.addEventListener('mousedown', () => {
+    isDragging = true;
+    audio.pause();
+  });
+
+  // 拖
+
 // 时间更新监听器
 document.getElementById('{{ include.id }}').addEventListener('timeupdate', function() {
  const player = this.parentElement;
