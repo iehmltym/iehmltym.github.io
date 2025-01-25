@@ -1,21 +1,186 @@
 <!-- _includes/audio-player.html -->
-<div class="audio-player">
+<div class="audio-player custom-audio-player">
   <div class="player-header">
     <h2>{{ include.title }}</h2>
-    <span class="duration">{{ include.duration }}</span>
   </div>
   
-  <audio id="{{ include.id }}" preload="metadata">
-    <source src="{{ include.src }}" type="audio/mpeg">
-  </audio>
+  <audio id="{{ include.id }}" src="{{ include.src }}" preload="metadata"></audio>
   
   <div class="player-controls">
-    <button class="audio-btn" onclick="document.getElementById('{{ include.id }}').play()">
-      <i class="fas fa-play"></i>
-    </button>
-    <div class="progress">
-      <div class="progress-bar"></div>
+    <div class="main-controls">
+      <button class="play-btn" onclick="togglePlay('{{ include.id }}')">
+        <i class="fas fa-play"></i>
+      </button>
+      <div class="progress" onclick="seek(event, '{{ include.id }}')">
+        <div class="progress-bar"></div>
+      </div>
+      <div class="time-display">
+        <span class="current-time">0:00</span> / 
+        <span class="duration">{{ include.duration }}</span>
+      </div>
     </div>
-    <span class="time">0:00</span>
+    <div class="volume-controls">
+      <button class="volume-btn" onclick="toggleMute('{{ include.id }}')">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <input type="range" class="volume-slider" 
+             min="0" max="100" value="100"
+             oninput="changeVolume('{{ include.id }}', this.value)">
+    </div>
   </div>
 </div>
+
+<style>
+.custom-audio-player {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.player-header {
+  margin-bottom: 1rem;
+}
+
+.player-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.player-controls {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.main-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.play-btn {
+  background: #007bff;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.play-btn:hover {
+  background: #0056b3;
+}
+
+.progress {
+  flex: 1;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #007bff;
+  border-radius: 3px;
+  transition: width 0.1s;
+}
+
+.time-display {
+  font-size: 0.9rem;
+  color: #666;
+  min-width: 100px;
+  text-align: right;
+}
+
+.volume-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.volume-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.3rem;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 4px;
+}
+</style>
+
+<script>
+function togglePlay(id) {
+  const audio = document.getElementById(id);
+  const btn = audio.parentElement.querySelector('.play-btn i');
+  
+  if (audio.paused) {
+    audio.play();
+    btn.className = 'fas fa-pause';
+  } else {
+    audio.pause();
+    btn.className = 'fas fa-play';
+  }
+}
+
+function seek(event, id) {
+  const audio = document.getElementById(id);
+  const progress = event.currentTarget;
+  const position = event.offsetX / progress.offsetWidth;
+  audio.currentTime = position * audio.duration;
+}
+
+function toggleMute(id) {
+  const audio = document.getElementById(id);
+  const btn = audio.parentElement.querySelector('.volume-btn i');
+  
+  audio.muted = !audio.muted;
+  btn.className = audio.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+function changeVolume(id, value) {
+  const audio = document.getElementById(id);
+  audio.volume = value / 100;
+  
+  const btn = audio.parentElement.querySelector('.volume-btn i');
+  if (value > 50) {
+    btn.className = 'fas fa-volume-up';
+  } else if (value > 0) {
+    btn.className = 'fas fa-volume-down';
+  } else {
+    btn.className = 'fas fa-volume-mute';
+  }
+}
+
+document.getElementById('{{ include.id }}').addEventListener('timeupdate', function() {
+  const player = this.parentElement;
+  const progress = player.querySelector('.progress-bar');
+  const currentTime = player.querySelector('.current-time');
+  
+  const percent = (this.currentTime / this.duration) * 100;
+  progress.style.width = percent + '%';
+  currentTime.textContent = formatTime(this.currentTime);
+});
+
+function formatTime(seconds) {
+  return new Date(seconds * 1000).toISOString().substr(14, 5);
+}
+</script>
