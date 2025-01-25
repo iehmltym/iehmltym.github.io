@@ -1,186 +1,302 @@
-<!-- _includes/audio-player.html -->
+<!-- audio-player.html - 自定义音频播放器组件 -->
 <div class="audio-player custom-audio-player">
-  <div class="player-header">
-    <h2>{{ include.title }}</h2>
-  </div>
-  
-  <audio id="{{ include.id }}" src="{{ include.src }}" preload="metadata"></audio>
-  
-  <div class="player-controls">
-    <div class="main-controls">
-      <button class="play-btn" onclick="togglePlay('{{ include.id }}')">
-        <i class="fas fa-play"></i>
-      </button>
-      <div class="progress" onclick="seek(event, '{{ include.id }}')">
-        <div class="progress-bar"></div>
-      </div>
-      <div class="time-display">
-        <span class="current-time">0:00</span> / 
-        <span class="duration">{{ include.duration }}</span>
-      </div>
-    </div>
-    <div class="volume-controls">
-      <button class="volume-btn" onclick="toggleMute('{{ include.id }}')">
-        <i class="fas fa-volume-up"></i>
-      </button>
-      <input type="range" class="volume-slider" 
-             min="0" max="100" value="100"
-             oninput="changeVolume('{{ include.id }}', this.value)">
-    </div>
-  </div>
+ <!-- 标题区域 -->
+ <div class="player-header">
+   <h2>{{ include.title }}</h2>
+ </div>
+ 
+ <!-- 音频元素 -->
+ <audio id="{{ include.id }}" src="{{ include.src }}" preload="metadata"></audio>
+ 
+ <!-- 播放器控制面板 -->
+ <div class="player-controls">
+   <!-- 主控制区域 -->
+   <div class="main-controls">
+     <!-- 后退15秒按钮 -->
+     <button class="control-btn" onclick="skip('{{ include.id }}', -15)" title="后退15秒">
+       <i class="fas fa-backward-step"></i>
+     </button>
+
+     <!-- 播放/暂停按钮 -->
+     <button class="play-btn" onclick="togglePlay('{{ include.id }}')">
+       <i class="fas fa-play"></i>
+     </button>
+
+     <!-- 前进15秒按钮 -->
+     <button class="control-btn" onclick="skip('{{ include.id }}', 15)" title="前进15秒">
+       <i class="fas fa-forward-step"></i>
+     </button>
+     
+     <!-- 进度条 -->
+     <div class="progress" onclick="seek(event, '{{ include.id }}')">
+       <div class="progress-bar"></div>
+     </div>
+     
+     <!-- 时间显示 -->
+     <div class="time-display">
+       <span class="current-time">0:00</span> / 
+       <span class="duration">{{ include.duration }}</span>
+     </div>
+     
+     <!-- 播放速度选择 -->
+     <select class="speed-select" onchange="changeSpeed('{{ include.id }}', this.value)" title="播放速度">
+       <option value="0.5">0.5x</option>
+       <option value="0.75">0.75x</option>
+       <option value="1" selected>1x</option>
+       <option value="1.25">1.25x</option>
+       <option value="1.5">1.5x</option>
+       <option value="2">2x</option>
+     </select>
+   </div>
+   
+   <!-- 辅助控制区域 -->
+   <div class="secondary-controls">
+     <!-- 音量控制 -->
+     <div class="volume-controls">
+       <button class="volume-btn" onclick="toggleMute('{{ include.id }}')" title="静音">
+         <i class="fas fa-volume-up"></i>
+       </button>
+       <input type="range" class="volume-slider" 
+              min="0" max="100" value="100" title="音量"
+              oninput="changeVolume('{{ include.id }}', this.value)">
+     </div>
+     
+     <!-- 下载按钮 -->
+     <a href="{{ include.src }}" download class="download-btn" title="下载音频">
+       <i class="fas fa-download"></i>
+     </a>
+   </div>
+ </div>
+ 
+ <!-- 字幕/歌词显示区域 -->
+ <div class="lyrics-container" id="lyrics-{{ include.id }}">
+   {{ include.lyrics }}
+ </div>
 </div>
 
+<!-- 样式定义 -->
 <style>
+/* 播放器容器基础样式 */
 .custom-audio-player {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin: 2rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ background: #f8f9fa;
+ border-radius: 8px;
+ padding: 1.5rem;
+ margin: 2rem 0;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* 播放器标题样式 */
 .player-header {
-  margin-bottom: 1rem;
+ margin-bottom: 1rem;
 }
 
 .player-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #333;
+ margin: 0;
+ font-size: 1.25rem;
+ color: #333;
 }
 
+/* 控制面板布局 */
 .player-controls {
-  background: white;
-  padding: 1rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+ background: white;
+ padding: 1rem;
+ border-radius: 6px;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+/* 主控制区布局 */
 .main-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.8rem;
+ display: flex;
+ align-items: center;
+ gap: 1rem;
+ margin-bottom: 0.8rem;
 }
 
+/* 辅助控制区布局 */
+.secondary-controls {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+}
+
+/* 控制按钮基础样式 */
+.control-btn {
+ background: none;
+ border: none;
+ color: #666;
+ cursor: pointer;
+ padding: 0.5rem;
+ transition: color 0.2s;
+}
+
+.control-btn:hover {
+ color: #007bff;
+}
+
+/* 播放按钮特殊样式 */
 .play-btn {
-  background: #007bff;
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
+ background: #007bff;
+ color: white;
+ width: 40px;
+ height: 40px;
+ border-radius: 50%;
+ border: none;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ transition: background-color 0.2s;
 }
 
 .play-btn:hover {
-  background: #0056b3;
+ background: #0056b3;
 }
 
+/* 进度条样式 */
 .progress {
-  flex: 1;
-  height: 6px;
-  background: #e9ecef;
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
+ flex: 1;
+ height: 6px;
+ background: #e9ecef;
+ border-radius: 3px;
+ cursor: pointer;
+ position: relative;
 }
 
 .progress-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: #007bff;
-  border-radius: 3px;
-  transition: width 0.1s;
+ position: absolute;
+ left: 0;
+ top: 0;
+ height: 100%;
+ background: #007bff;
+ border-radius: 3px;
+ transition: width 0.1s;
 }
 
-.time-display {
-  font-size: 0.9rem;
-  color: #666;
-  min-width: 100px;
-  text-align: right;
+/* 播放速度选择器样式 */
+.speed-select {
+ padding: 0.3rem;
+ border-radius: 4px;
+ border: 1px solid #ddd;
+ cursor: pointer;
 }
 
+/* 音量控制样式 */
 .volume-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
+ display: flex;
+ align-items: center;
+ gap: 0.8rem;
 }
 
 .volume-btn {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 0.3rem;
+ background: none;
+ border: none;
+ color: #666;
+ cursor: pointer;
 }
 
 .volume-slider {
-  width: 80px;
-  height: 4px;
+ width: 80px;
+ height: 4px;
+}
+
+/* 下载按钮样式 */
+.download-btn {
+ color: #666;
+ text-decoration: none;
+ padding: 0.5rem;
+ transition: color 0.2s;
+}
+
+.download-btn:hover {
+ color: #007bff;
+}
+
+/* 字幕容器样式 */
+.lyrics-container {
+ margin-top: 1rem;
+ padding: 1rem;
+ background: #f8f9fa;
+ border-radius: 4px;
+ max-height: 200px;
+ overflow-y: auto;
+ font-size: 0.9rem;
+ line-height: 1.6;
 }
 </style>
 
+<!-- JavaScript功能实现 -->
 <script>
+// 播放/暂停切换
 function togglePlay(id) {
-  const audio = document.getElementById(id);
-  const btn = audio.parentElement.querySelector('.play-btn i');
-  
-  if (audio.paused) {
-    audio.play();
-    btn.className = 'fas fa-pause';
-  } else {
-    audio.pause();
-    btn.className = 'fas fa-play';
-  }
+ const audio = document.getElementById(id);
+ const btn = audio.parentElement.querySelector('.play-btn i');
+ 
+ if (audio.paused) {
+   audio.play();
+   btn.className = 'fas fa-pause';
+ } else {
+   audio.pause();
+   btn.className = 'fas fa-play';
+ }
 }
 
+// 进度跳转
 function seek(event, id) {
-  const audio = document.getElementById(id);
-  const progress = event.currentTarget;
-  const position = event.offsetX / progress.offsetWidth;
-  audio.currentTime = position * audio.duration;
+ const audio = document.getElementById(id);
+ const progress = event.currentTarget;
+ const position = event.offsetX / progress.offsetWidth;
+ audio.currentTime = position * audio.duration;
 }
 
+// 快进快退
+function skip(id, seconds) {
+ const audio = document.getElementById(id);
+ audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+}
+
+// 播放速度调整
+function changeSpeed(id, speed) {
+ const audio = document.getElementById(id);
+ audio.playbackRate = parseFloat(speed);
+}
+
+// 静音切换
 function toggleMute(id) {
-  const audio = document.getElementById(id);
-  const btn = audio.parentElement.querySelector('.volume-btn i');
-  
-  audio.muted = !audio.muted;
-  btn.className = audio.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+ const audio = document.getElementById(id);
+ const btn = audio.parentElement.querySelector('.volume-btn i');
+ 
+ audio.muted = !audio.muted;
+ btn.className = audio.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
 }
 
+// 音量调节
 function changeVolume(id, value) {
-  const audio = document.getElementById(id);
-  audio.volume = value / 100;
-  
-  const btn = audio.parentElement.querySelector('.volume-btn i');
-  if (value > 50) {
-    btn.className = 'fas fa-volume-up';
-  } else if (value > 0) {
-    btn.className = 'fas fa-volume-down';
-  } else {
-    btn.className = 'fas fa-volume-mute';
-  }
+ const audio = document.getElementById(id);
+ audio.volume = value / 100;
+ 
+ const btn = audio.parentElement.querySelector('.volume-btn i');
+ if (value > 50) {
+   btn.className = 'fas fa-volume-up';
+ } else if (value > 0) {
+   btn.className = 'fas fa-volume-down';
+ } else {
+   btn.className = 'fas fa-volume-mute';
+ }
 }
 
+// 时间更新监听器
 document.getElementById('{{ include.id }}').addEventListener('timeupdate', function() {
-  const player = this.parentElement;
-  const progress = player.querySelector('.progress-bar');
-  const currentTime = player.querySelector('.current-time');
-  
-  const percent = (this.currentTime / this.duration) * 100;
-  progress.style.width = percent + '%';
-  currentTime.textContent = formatTime(this.currentTime);
+ const player = this.parentElement;
+ const progress = player.querySelector('.progress-bar');
+ const currentTime = player.querySelector('.current-time');
+ 
+ const percent = (this.currentTime / this.duration) * 100;
+ progress.style.width = percent + '%';
+ currentTime.textContent = formatTime(this.currentTime);
 });
 
+// 时间格式化
 function formatTime(seconds) {
-  return new Date(seconds * 1000).toISOString().substr(14, 5);
+ return new Date(seconds * 1000).toISOString().substr(14, 5);
 }
 </script>
