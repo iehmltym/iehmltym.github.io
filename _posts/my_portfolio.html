@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Dashboard (Desktop)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* DESKTOP-FIRST CSS */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            color: #333; 
+            margin: 0; 
+            padding: 40px; 
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        h1 { margin: 0; font-size: 1.8rem; color: #2c3e50; }
+        
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .rate-group { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #7f8c8d; }
+        
+        select.lang-select { 
+            padding: 8px 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            cursor: pointer; 
+        }
+
+        /* GRID LAYOUT */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two equal columns */
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* CARDS */
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            border: 1px solid #e1e4e8;
+        }
+        
+        .full-width { grid-column: 1 / -1; }
+
+        h2 { 
+            margin-top: 0; 
+            font-size: 1rem; 
+            color: #7f8c8d; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 15px; 
+            margin-bottom: 25px; 
+        }
+
+        /* INPUT ROWS */
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align top for subtitle support */
+            margin-bottom: 18px;
+        }
+        
+        label { font-weight: 600; font-size: 0.95rem; color: #555; padding-top: 10px; }
+
+        .input-wrapper { display: flex; gap: 8px; align-items: center; }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            text-align: right;
+            width: 130px;
+            transition: border 0.2s;
+        }
+        
+        input:focus { border-color: #3498db; outline: none; }
+
+        select.currency {
+            padding: 10px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .sub-value {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            text-align: right;
+            margin-top: 4px;
+            min-height: 15px;
+        }
+
+        /* HIGHLIGHT BOX (Monthly Invest) */
+        .highlight-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .highlight-box label { color: #15803d; }
+        .highlight-box input { border-color: #bbf7d0; color: #15803d; font-weight: bold; }
+
+        /* CASH FLOW BAR */
+        .budget-bar-container { margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 8px; }
+        .budget-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: #666; margin-bottom: 8px; }
+        
+        .bar-track {
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+        }
+        
+        .status-msg { text-align: center; font-size: 0.9rem; font-weight: 700; margin-top: 10px; }
+        .safe { color: #27ae60; }
+        .danger { color: #e74c3c; }
+
+        /* SUMMARY & CHARTS */
+        .summary-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+            border: 1px solid #ecf0f1;
+        }
+        .big-number { font-size: 2rem; font-weight: 800; color: #27ae60; }
+        .summary-label { font-size: 0.85rem; text-transform: uppercase; color: #7f8c8d; font-weight: 700; margin-bottom: 5px; }
+
+        .chart-container-donut {
+            height: 320px;
+            position: relative;
+            margin-top: 20px;
+            padding: 10px;
+        }
+        .chart-container-line { height: 350px; position: relative; width: 100%; }
+
+        /* SLIDERS */
+        .slider-row { margin-top: 20px; }
+        .slider-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 5px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        .slider-note { font-size: 0.8rem; color: #95a5a6; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Financial Dashboard</h1>
+        <div class="header-controls">
+            <div class="rate-group">
+                <span id="t_rate">USD/JPY Rate:</span>
+                <input type="number" id="exchangeRate" value="150" oninput="update()" style="width: 80px; text-align: right;">
+            </div>
+            <select class="lang-select" id="languageSelect" onchange="setLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="zh">简体中文</option>
+                <option value="ja">日本語</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <div class="card">
+            <h2 id="t_assets">1. Current Portfolio</h2>
+            
+            <div class="input-row">
+                <label id="t_cash">💴 Cash</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="cashCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="cash" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="cashConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <label id="t_usStock">🇺🇸 US Stock</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="usStockCurrency" onchange="update()"><option value="USD" selected>USD</option><option value="JPY">JPY</option></select>
+                        <input type="text" id="usStock" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="usStockConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <label id="t_usBond">🏛 US Treasury</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="usBondCurrency" onchange="update()"><option value="USD" selected>USD</option><option value="JPY">JPY</option></select>
+                        <input type="text" id="usBond" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="usBondConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <label id="t_jpStock">🇯🇵 JP Stock</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="jpStockCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="jpStock" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="jpStockConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <label id="t_others">📦 Others</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="othersCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="others" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="othersConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="chart-container-donut">
+                <canvas id="allocationChart"></canvas>
+            </div>
+
+            <div class="summary-panel">
+                <div class="summary-label" id="t_totalVal">Total Current Value</div>
+                <div class="big-number" id="totalDisplayJpy">---</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 id="t_budget">2. Budget & Strategy</h2>
+            
+            <div class="input-row">
+                <label id="t_income">Annual Income (Net)</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="incomeCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="income" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="incomeConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <label id="t_living">Living Expense (Annual)</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="expenseCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="expense" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="expenseConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="input-row highlight-box">
+                <label id="t_monthlyInvest">Target Monthly Investment</label>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="investCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
+                        <input type="text" id="monthlyInvest" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
+                    </div>
+                    <div id="monthlyInvestConverted" class="sub-value"></div>
+                </div>
+            </div>
+
+            <div class="budget-bar-container">
+                <div class="budget-labels">
+                    <span id="t_barUsed">Expense + Invest</span>
+                    <span id="t_barRemaining">Buffer</span>
+                </div>
+                <div class="bar-track" id="flowBar">
+                    </div>
+                <div class="status-msg" id="flowMessage">---</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header"><span id="t_growth">Avg. Annual Growth</span><span id="growthDisplay">5%</span></div>
+                <input type="range" id="growthRate" min="0" max="15" value="5" step="0.5" oninput="update()">
+                <div class="slider-note" id="t_growthExp">Conservative: 3-4% | Index: 5-7% | Aggr: 8%+</div>
+            </div>
+            
+            <div class="input-row">
+                <label id="t_years">Years to Project</label>
+                <div class="input-wrapper">
+                    <input type="number" id="years" min="5" max="50" value="15" oninput="update()" style="width: 80px; text-align: right;">
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2 id="t_trajectory">3. Future Trajectory (JPY)</h2>
+            <div class="chart-container-line">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let growthChart = null;
+    let donutChart = null;
+    let currentLang = 'en';
+
+    // TRANSLATIONS
+    const translations = {
+        en: {
+            t_assets: "1. Current Portfolio",
+            t_budget: "2. Budget & Strategy",
+            t_trajectory: "3. Future Trajectory (JPY)",
+            t_rate: "USD/JPY Rate:",
+            t_cash: "💴 Cash",
+            t_usStock: "🇺🇸 US Stock",
+            t_usBond: "🏛 US Treasury",
+            t_jpStock: "🇯🇵 JP Stock",
+            t_others: "📦 Others",
+            t_totalVal: "Total Current Value",
+            t_income: "Annual Income (Net)",
+            t_living: "Living Expense (Annual)",
+            t_monthlyInvest: "Target Monthly Investment",
+            t_barUsed: "Expense + Invest",
+            t_barRemaining: "Cash Buffer",
+            t_growth: "Avg. Annual Growth",
+            t_growthExp: "Conservative: 3-4% | Index: 5-7% | Aggr: 8%+",
+            t_years: "Years to Project",
+            msg_safe: "Safe: You have cash left over.",
+            msg_danger: "Warning: Expenses exceed Income!",
+            chart_netWorth: "Total Net Worth (JPY)"
+        },
+        zh: {
+            t_assets: "1. 当前资产组合",
+            t_budget: "2. 预算与策略",
+            t_trajectory: "3. 未来资产走势 (JPY)",
+            t_rate: "美元/日元 汇率:",
+            t_cash: "💴 现金",
+            t_usStock: "🇺🇸 美股",
+            t_usBond: "🏛 美国国债",
+            t_jpStock: "🇯🇵 日本股票",
+            t_others: "📦 其他资产",
+            t_totalVal: "当前总资产",
+            t_income: "年收入 (税后)",
+            t_living: "年度生活支出 (不含投资)",
+            t_monthlyInvest: "目标每月投资额",
+            t_barUsed: "支出 + 投资",
+            t_barRemaining: "现金缓冲",
+            t_growth: "平均年增长率",
+            t_growthExp: "保守: 3-4% | 指数: 5-7% | 激进: 8%+",
+            t_years: "预测年数",
+            msg_safe: "安全: 您的收入足以覆盖支出与投资",
+            msg_danger: "警告: 支出超过了收入!",
+            chart_netWorth: "总净资产 (JPY)"
+        },
+        ja: {
+            t_assets: "1. 現在の資産ポートフォリオ",
+            t_budget: "2. 予算と戦略",
+            t_trajectory: "3. 将来の資産推移 (円)",
+            t_rate: "ドル円レート:",
+            t_cash: "💴 現金",
+            t_usStock: "🇺🇸 米国株",
+            t_usBond: "🏛 米国債",
+            t_jpStock: "🇯🇵 日本株",
+            t_others: "📦 その他",
+            t_totalVal: "資産総額 (現在)",
+            t_income: "年間手取り収入",
+            t_living: "年間生活費 (投資除く)",
+            t_monthlyInvest: "月々の投資目標額",
+            t_barUsed: "支出 + 投資",
+            t_barRemaining: "現金余力",
+            t_growth: "平均年利回り",
+            t_growthExp: "保守的: 3-4% | インデックス: 5-7% | 積極的: 8%+",
+            t_years: "シミュレーション期間 (年)",
+            msg_safe: "安全: 収入の範囲内に収まっています",
+            msg_danger: "警告: 支出が収入を超えています！",
+            chart_netWorth: "純資産総額 (円)"
+        }
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        const texts = translations[lang];
+        for (const key in texts) {
+            const el = document.getElementById(key);
+            if (el) el.innerText = texts[key];
+        }
+        update();
+    }
+
+    // --- HELPERS ---
+    function formatJpy(num) {
+        return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumSignificantDigits: 4 }).format(num);
+    }
+    
+    function formatUsd(num) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 4 }).format(num);
+    }
+    
+    function parseNumber(str) {
+        if (!str) return 0;
+        return parseFloat(String(str).replace(/,/g, '')) || 0;
+    }
+
+    function formatInput(input) {
+        let val = parseNumber(input.value);
+        if (val === 0) { input.value = ''; return; }
+        input.value = new Intl.NumberFormat('en-US').format(val);
+    }
+
+    function unformatInput(input) {
+        let val = parseNumber(input.value);
+        if (val === 0) { input.value = ''; return; }
+        input.value = val;
+    }
+
+    // --- CORE LOGIC ---
+    function getStandardizedValue(elementId, currencyElementId, rate) {
+        const rawVal = document.getElementById(elementId).value;
+        const val = parseNumber(rawVal);
+        const currency = document.getElementById(currencyElementId).value;
+        
+        let valJpy = 0;
+        let valUsd = 0;
+
+        if (currency === 'USD') {
+            valUsd = val;
+            valJpy = val * rate;
+            const convertedEl = document.getElementById(elementId + 'Converted');
+            if (convertedEl) convertedEl.innerText = val > 0 ? formatJpy(valJpy) : '';
+        } else {
+            valJpy = val;
+            valUsd = val / rate;
+            const convertedEl = document.getElementById(elementId + 'Converted');
+            if (convertedEl) convertedEl.innerText = val > 0 ? formatUsd(valUsd) : '';
+        }
+        return { jpy: valJpy, usd: valUsd };
+    }
+
+    // --- STORAGE ---
+    function saveToLocalStorage() {
+        const ids = ['exchangeRate', 'cash', 'cashCurrency', 'usStock', 'usStockCurrency', 'usBond', 'usBondCurrency', 'jpStock', 'jpStockCurrency', 'others', 'othersCurrency', 'income', 'incomeCurrency', 'expense', 'expenseCurrency', 'monthlyInvest', 'investCurrency', 'growthRate', 'years'];
+        const data = { lang: document.getElementById('languageSelect').value };
+        ids.forEach(id => data[id] = document.getElementById(id).value);
+        localStorage.setItem('portfolioDataV6', JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+        const saved = localStorage.getItem('portfolioDataV6');
+        if (!saved) return;
+        try {
+            const data = JSON.parse(saved);
+            if(data.lang) { document.getElementById('languageSelect').value = data.lang; setLanguage(data.lang); }
+            for (const key in data) {
+                if(key !== 'lang' && document.getElementById(key)) document.getElementById(key).value = data[key];
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // --- UPDATE EVERYTHING ---
+    function update() {
+        saveToLocalStorage();
+        const rate = parseFloat(document.getElementById('exchangeRate').value) || 150;
+
+        // 1. Assets
+        const cash = getStandardizedValue('cash', 'cashCurrency', rate);
+        const usStock = getStandardizedValue('usStock', 'usStockCurrency', rate);
+        const usBond = getStandardizedValue('usBond', 'usBondCurrency', rate);
+        const jpStock = getStandardizedValue('jpStock', 'jpStockCurrency', rate);
+        const others = getStandardizedValue('others', 'othersCurrency', rate);
+
+        const totalJpy = cash.jpy + usStock.jpy + usBond.jpy + jpStock.jpy + others.jpy;
+        document.getElementById('totalDisplayJpy').innerText = formatJpy(totalJpy);
+
+        // 2. Budget Logic
+        const income = getStandardizedValue('income', 'incomeCurrency', rate);
+        const livingExpense = getStandardizedValue('expense', 'expenseCurrency', rate);
+        const monthlyInvest = getStandardizedValue('monthlyInvest', 'investCurrency', rate);
+        
+        const annualInvestJpy = monthlyInvest.jpy * 12;
+        const totalOutflow = livingExpense.jpy + annualInvestJpy;
+        const balance = income.jpy - totalOutflow;
+
+        // 3. Render Bar
+        const barContainer = document.getElementById('flowBar');
+        const msgContainer = document.getElementById('flowMessage');
+        const t = translations[currentLang];
+
+        if (income.jpy <= 0) {
+            barContainer.innerHTML = `<div style="width:100%; background:#e0e0e0;"></div>`;
+            msgContainer.innerText = "---";
+        } else {
+            const pExpense = Math.min(100, (livingExpense.jpy / income.jpy) * 100);
+            const pInvest = Math.min(100 - pExpense, (annualInvestJpy / income.jpy) * 100);
+            
+            if (balance < 0) {
+                barContainer.innerHTML = `<div style="width:${pExpense}%; background:#95a5a6;"></div><div style="width:${pInvest}%; background:#e74c3c;"></div>`;
+                msgContainer.innerText = t.msg_danger + " (" + formatJpy(balance) + ")";
+                msgContainer.className = "status-msg danger";
+            } else {
+                barContainer.innerHTML = `<div style="width:${pExpense}%; background:#95a5a6;"></div><div style="width:${pInvest}%; background:#3498db;"></div><div style="flex-grow:1; background:#27ae60;"></div>`;
+                msgContainer.innerText = t.msg_safe + " (Buffer: " + formatJpy(balance) + ")";
+                msgContainer.className = "status-msg safe";
+            }
+        }
+
+        // 4. Update Charts
+        const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
+        document.getElementById('growthDisplay').innerText = (growthRate * 100).toFixed(1) + "%";
+
+        const years = parseInt(document.getElementById('years').value) || 15;
+
+        updateDonut(cash.jpy, usStock.jpy, usBond.jpy, jpStock.jpy, others.jpy);
+        
+        let labels = [], data = [], currentAmt = totalJpy, currentYear = new Date().getFullYear();
+        labels.push(currentYear); data.push(currentAmt);
+        for(let i=1; i<=years; i++) {
+            currentAmt = (currentAmt * (1 + growthRate)) + annualInvestJpy;
+            labels.push(currentYear + i); data.push(currentAmt);
+        }
+        updateLineChart(labels, data);
+    }
+
+    function updateDonut(cash, usStock, usBond, jpStock, others) {
+        const ctx = document.getElementById('allocationChart');
+        if (!ctx) return;
+
+        if(donutChart) donutChart.destroy();
+        const t = translations[currentLang];
+
+        let dataSet = [cash, usStock, usBond, jpStock, others];
+        let labels = [t.t_cash, t.t_usStock, t.t_usBond, t.t_jpStock, t.t_others];
+        let total = dataSet.reduce((a, b) => a + b, 0);
+        let bgColors = ['#95a5a6', '#2980b9', '#f1c40f', '#e74c3c', '#9b59b6'];
+
+        // Filter out zero values for better display
+        if (total > 0) {
+            let filteredData = [];
+            let filteredLabels = [];
+            let filteredColors = [];
+
+            dataSet.forEach((val, idx) => {
+                if (val > 0) {
+                    filteredData.push(val);
+                    filteredLabels.push(labels[idx]);
+                    filteredColors.push(bgColors[idx]);
+                }
+            });
+
+            dataSet = filteredData;
+            labels = filteredLabels;
+            bgColors = filteredColors;
+        } else {
+            // Empty state - show placeholder
+            dataSet = [1];
+            labels = ['No Data'];
+            bgColors = ['#ecf0f1'];
+        }
+
+        donutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataSet,
+                    backgroundColor: bgColors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        display: true,
+                        labels: {
+                            padding: 12,
+                            font: { size: 11 },
+                            boxWidth: 15,
+                            boxHeight: 15,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return {
+                                            text: `${label}: ${percentage}%`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: total > 0,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${formatJpy(value)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateLineChart(labels, data) {
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        if(growthChart) growthChart.destroy();
+        const t = translations[currentLang];
+
+        growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: t.chart_netWorth,
+                    data: data,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { callback: function(val) { return new Intl.NumberFormat('ja-JP', { notation: "compact" }).format(val); } } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    window.onload = function() {
+        setLanguage('en'); 
+        loadFromLocalStorage();
+        document.querySelectorAll('input[type="text"]').forEach(input => formatInput(input));
+        update();
+    };
+</script>
+</body>
+</html>
