@@ -3,7 +3,6 @@ layout: null
 permalink: /touzi/
 ---
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,8 +81,152 @@ permalink: /touzi/
             align-items: flex-start; /* Align top for subtitle support */
             margin-bottom: 18px;
         }
-        
+
         label { font-weight: 600; font-size: 0.95rem; color: #555; padding-top: 10px; }
+
+        .category-row {
+            position: relative;
+        }
+
+        .category-row:hover .category-actions {
+            opacity: 1;
+        }
+
+        .category-label-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-name {
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            border-radius: 4px;
+            background: transparent;
+            cursor: text;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .category-name:hover {
+            background: #f8f9fa;
+            border-color: #e1e4e8;
+        }
+
+        .category-name:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .category-actions {
+            display: inline-flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: 1px solid #dfe6e9;
+            border-radius: 4px;
+            padding: 4px 7px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #f8f9fa;
+            border-color: #bdc3c7;
+            color: #2c3e50;
+        }
+
+        .btn-delete-icon {
+            color: #e74c3c;
+        }
+
+        .btn-delete-icon:hover {
+            background: #fee;
+            border-color: #e74c3c;
+            color: #c0392b;
+        }
+
+        .btn-add-category {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-add-category:hover {
+            background: #229954;
+        }
+
+        .snapshot-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-snapshot {
+            flex: 1;
+            padding: 8px 15px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-snapshot:hover {
+            background: #f8f9fa;
+            border-color: #bdc3c7;
+        }
+
+        .btn-save {
+            color: #2980b9;
+        }
+
+        .btn-save:hover {
+            background: #ebf5fb;
+            border-color: #2980b9;
+        }
+
+        .btn-load {
+            color: #27ae60;
+        }
+
+        .btn-load:hover {
+            background: #e8f8f5;
+            border-color: #27ae60;
+        }
+
+        .snapshot-info {
+            font-size: 0.75rem;
+            color: #95a5a6;
+            text-align: center;
+            margin-top: 5px;
+        }
 
         .input-wrapper { display: flex; gap: 8px; align-items: center; }
 
@@ -193,61 +336,20 @@ permalink: /touzi/
         
         <div class="card">
             <h2 id="t_assets">1. Current Portfolio</h2>
-            
-            <div class="input-row">
-                <label id="t_cash">💴 Cash</label>
-                <div>
-                    <div class="input-wrapper">
-                        <select class="currency" id="cashCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
-                        <input type="text" id="cash" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
-                    </div>
-                    <div id="cashConverted" class="sub-value"></div>
-                </div>
-            </div>
 
-            <div class="input-row">
-                <label id="t_usStock">🇺🇸 US Stock</label>
-                <div>
-                    <div class="input-wrapper">
-                        <select class="currency" id="usStockCurrency" onchange="update()"><option value="USD" selected>USD</option><option value="JPY">JPY</option></select>
-                        <input type="text" id="usStock" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
-                    </div>
-                    <div id="usStockConverted" class="sub-value"></div>
-                </div>
-            </div>
+            <div id="categoriesContainer"></div>
 
-            <div class="input-row">
-                <label id="t_usBond">🏛 US Treasury</label>
-                <div>
-                    <div class="input-wrapper">
-                        <select class="currency" id="usBondCurrency" onchange="update()"><option value="USD" selected>USD</option><option value="JPY">JPY</option></select>
-                        <input type="text" id="usBond" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
-                    </div>
-                    <div id="usBondConverted" class="sub-value"></div>
-                </div>
-            </div>
+            <button class="btn-add-category" onclick="addCategory()">+ <span id="t_addCategory">Add Category</span></button>
 
-            <div class="input-row">
-                <label id="t_jpStock">🇯🇵 JP Stock</label>
-                <div>
-                    <div class="input-wrapper">
-                        <select class="currency" id="jpStockCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
-                        <input type="text" id="jpStock" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
-                    </div>
-                    <div id="jpStockConverted" class="sub-value"></div>
-                </div>
+            <div class="snapshot-controls">
+                <button class="btn-snapshot btn-save" onclick="saveSnapshot()">
+                    💾 <span id="t_saveSnapshot">Save Snapshot</span>
+                </button>
+                <button class="btn-snapshot btn-load" onclick="loadSnapshot()">
+                    📂 <span id="t_loadSnapshot">Load Snapshot</span>
+                </button>
             </div>
-
-            <div class="input-row">
-                <label id="t_others">📦 Others</label>
-                <div>
-                    <div class="input-wrapper">
-                        <select class="currency" id="othersCurrency" onchange="update()"><option value="JPY">JPY</option><option value="USD">USD</option></select>
-                        <input type="text" id="others" placeholder="0" oninput="update()" onfocus="unformatInput(this)" onblur="formatInput(this)">
-                    </div>
-                    <div id="othersConverted" class="sub-value"></div>
-                </div>
-            </div>
+            <div class="snapshot-info" id="snapshotInfo">---</div>
 
             <div class="chart-container-donut">
                 <canvas id="allocationChart"></canvas>
@@ -317,12 +419,12 @@ permalink: /touzi/
                     <input type="number" id="years" min="5" max="50" value="15" oninput="update()" style="width: 80px; text-align: right;">
                 </div>
             </div>
-        </div>
 
-        <div class="card full-width">
-            <h2 id="t_trajectory">3. Future Trajectory (JPY)</h2>
-            <div class="chart-container-line">
-                <canvas id="growthChart"></canvas>
+            <div style="margin-top: 30px; padding-top: 25px; border-top: 2px solid #ecf0f1;">
+                <h3 id="t_trajectory" style="font-size: 0.95rem; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; margin-top: 0;">Future Trajectory (JPY)</h3>
+                <div class="chart-container-line">
+                    <canvas id="growthChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -333,13 +435,21 @@ permalink: /touzi/
     let growthChart = null;
     let donutChart = null;
     let currentLang = 'en';
+    let categories = [
+        { id: 'cash', name: '💴 Cash', currency: 'JPY', value: '' },
+        { id: 'usStock', name: '🇺🇸 US Stock', currency: 'USD', value: '' },
+        { id: 'usBond', name: '🏛 US Treasury', currency: 'USD', value: '' },
+        { id: 'jpStock', name: '🇯🇵 JP Stock', currency: 'JPY', value: '' },
+        { id: 'others', name: '📦 Others', currency: 'JPY', value: '' }
+    ];
+    let categoryIdCounter = 1000;
 
     // TRANSLATIONS
     const translations = {
         en: {
-            t_assets: "1. Current Portfolio",
-            t_budget: "2. Budget & Strategy",
-            t_trajectory: "3. Future Trajectory (JPY)",
+            t_assets: "Current Portfolio",
+            t_budget: "Budget & Strategy",
+            t_trajectory: "Future Trajectory (JPY)",
             t_rate: "USD/JPY Rate:",
             t_cash: "💴 Cash",
             t_usStock: "🇺🇸 US Stock",
@@ -355,14 +465,17 @@ permalink: /touzi/
             t_growth: "Avg. Annual Growth",
             t_growthExp: "Conservative: 3-4% | Index: 5-7% | Aggr: 8%+",
             t_years: "Years to Project",
+            t_addCategory: "Add Category",
+            t_saveSnapshot: "Save Snapshot",
+            t_loadSnapshot: "Load Snapshot",
             msg_safe: "Safe: You have cash left over.",
             msg_danger: "Warning: Expenses exceed Income!",
             chart_netWorth: "Total Net Worth (JPY)"
         },
         zh: {
-            t_assets: "1. 当前资产组合",
-            t_budget: "2. 预算与策略",
-            t_trajectory: "3. 未来资产走势 (JPY)",
+            t_assets: "当前资产组合",
+            t_budget: "预算与策略",
+            t_trajectory: "未来资产走势 (JPY)",
             t_rate: "美元/日元 汇率:",
             t_cash: "💴 现金",
             t_usStock: "🇺🇸 美股",
@@ -378,14 +491,17 @@ permalink: /touzi/
             t_growth: "平均年增长率",
             t_growthExp: "保守: 3-4% | 指数: 5-7% | 激进: 8%+",
             t_years: "预测年数",
+            t_addCategory: "添加类别",
+            t_saveSnapshot: "保存快照",
+            t_loadSnapshot: "加载快照",
             msg_safe: "安全: 您的收入足以覆盖支出与投资",
             msg_danger: "警告: 支出超过了收入!",
             chart_netWorth: "总净资产 (JPY)"
         },
         ja: {
-            t_assets: "1. 現在の資産ポートフォリオ",
-            t_budget: "2. 予算と戦略",
-            t_trajectory: "3. 将来の資産推移 (円)",
+            t_assets: "現在の資産ポートフォリオ",
+            t_budget: "予算と戦略",
+            t_trajectory: "将来の資産推移 (円)",
             t_rate: "ドル円レート:",
             t_cash: "💴 現金",
             t_usStock: "🇺🇸 米国株",
@@ -401,6 +517,9 @@ permalink: /touzi/
             t_growth: "平均年利回り",
             t_growthExp: "保守的: 3-4% | インデックス: 5-7% | 積極的: 8%+",
             t_years: "シミュレーション期間 (年)",
+            t_addCategory: "カテゴリーを追加",
+            t_saveSnapshot: "スナップショットを保存",
+            t_loadSnapshot: "スナップショットを読み込む",
             msg_safe: "安全: 収入の範囲内に収まっています",
             msg_danger: "警告: 支出が収入を超えています！",
             chart_netWorth: "純資産総額 (円)"
@@ -414,7 +533,180 @@ permalink: /touzi/
             const el = document.getElementById(key);
             if (el) el.innerText = texts[key];
         }
+        renderCategories();
         update();
+    }
+
+    // --- CATEGORY MANAGEMENT ---
+    function renderCategories() {
+        const container = document.getElementById('categoriesContainer');
+        container.innerHTML = '';
+
+        categories.forEach((cat, index) => {
+            const row = document.createElement('div');
+            row.className = 'input-row category-row';
+            row.innerHTML = `
+                <div class="category-label-wrapper">
+                    <input type="text"
+                           class="category-name"
+                           value="${cat.name}"
+                           onchange="updateCategoryName('${cat.id}', this.value)"
+                           placeholder="Category Name"
+                           title="Click to edit category name">
+                    ${categories.length > 1 ? `
+                        <span class="category-actions">
+                            <button class="btn-icon btn-delete-icon" onclick="deleteCategory('${cat.id}')" title="Delete category">🗑</button>
+                        </span>
+                    ` : ''}
+                </div>
+                <div>
+                    <div class="input-wrapper">
+                        <select class="currency" id="${cat.id}Currency" onchange="saveCategoryData(); update()">
+                            <option value="JPY" ${cat.currency === 'JPY' ? 'selected' : ''}>JPY</option>
+                            <option value="USD" ${cat.currency === 'USD' ? 'selected' : ''}>USD</option>
+                        </select>
+                        <input type="text"
+                               id="${cat.id}"
+                               placeholder="0"
+                               value="${cat.value}"
+                               oninput="saveCategoryData(); update()"
+                               onfocus="unformatInput(this)"
+                               onblur="formatInput(this)">
+                    </div>
+                    <div id="${cat.id}Converted" class="sub-value"></div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    function addCategory() {
+        const newId = 'cat' + (categoryIdCounter++);
+        categories.push({
+            id: newId,
+            name: '📁 New Category',
+            currency: 'JPY',
+            value: ''
+        });
+        renderCategories();
+        saveCategoriesToStorage();
+        update();
+    }
+
+    function deleteCategory(id) {
+        if (categories.length <= 1) {
+            alert('You must have at least one category.');
+            return;
+        }
+        categories = categories.filter(cat => cat.id !== id);
+        renderCategories();
+        saveCategoriesToStorage();
+        update();
+    }
+
+    function updateCategoryName(id, newName) {
+        const cat = categories.find(c => c.id === id);
+        if (cat) {
+            cat.name = newName;
+            saveCategoriesToStorage();
+        }
+    }
+
+    function saveCategoryData() {
+        categories.forEach(cat => {
+            const input = document.getElementById(cat.id);
+            const currencySelect = document.getElementById(cat.id + 'Currency');
+            if (input) cat.value = input.value;
+            if (currencySelect) cat.currency = currencySelect.value;
+        });
+        saveCategoriesToStorage();
+    }
+
+    // --- SNAPSHOT SAVE/LOAD ---
+    function saveSnapshot() {
+        saveCategoryData(); // Ensure current data is saved to categories array
+
+        const snapshot = {
+            timestamp: new Date().toISOString(),
+            categories: JSON.parse(JSON.stringify(categories)), // Deep copy
+            exchangeRate: document.getElementById('exchangeRate').value,
+            income: document.getElementById('income').value,
+            incomeCurrency: document.getElementById('incomeCurrency').value,
+            expense: document.getElementById('expense').value,
+            expenseCurrency: document.getElementById('expenseCurrency').value,
+            monthlyInvest: document.getElementById('monthlyInvest').value,
+            investCurrency: document.getElementById('investCurrency').value,
+            growthRate: document.getElementById('growthRate').value,
+            years: document.getElementById('years').value
+        };
+
+        localStorage.setItem('portfolioSnapshot', JSON.stringify(snapshot));
+        updateSnapshotInfo();
+        alert('Snapshot saved successfully!');
+    }
+
+    function loadSnapshot() {
+        const saved = localStorage.getItem('portfolioSnapshot');
+        if (!saved) {
+            alert('No snapshot found. Please save a snapshot first.');
+            return;
+        }
+
+        if (!confirm('This will replace all current values with the saved snapshot. Continue?')) {
+            return;
+        }
+
+        try {
+            const snapshot = JSON.parse(saved);
+
+            // Restore categories
+            categories = JSON.parse(JSON.stringify(snapshot.categories)); // Deep copy
+            saveCategoriesToStorage();
+            renderCategories();
+
+            // Restore other fields
+            document.getElementById('exchangeRate').value = snapshot.exchangeRate || '150';
+            if (snapshot.income) document.getElementById('income').value = snapshot.income;
+            if (snapshot.incomeCurrency) document.getElementById('incomeCurrency').value = snapshot.incomeCurrency;
+            if (snapshot.expense) document.getElementById('expense').value = snapshot.expense;
+            if (snapshot.expenseCurrency) document.getElementById('expenseCurrency').value = snapshot.expenseCurrency;
+            if (snapshot.monthlyInvest) document.getElementById('monthlyInvest').value = snapshot.monthlyInvest;
+            if (snapshot.investCurrency) document.getElementById('investCurrency').value = snapshot.investCurrency;
+            if (snapshot.growthRate) document.getElementById('growthRate').value = snapshot.growthRate;
+            if (snapshot.years) document.getElementById('years').value = snapshot.years;
+
+            // Format all text inputs
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (!input.classList.contains('category-name')) {
+                    formatInput(input);
+                }
+            });
+
+            update();
+            alert('Snapshot loaded successfully!');
+        } catch (e) {
+            console.error('Error loading snapshot:', e);
+            alert('Error loading snapshot. The saved data may be corrupted.');
+        }
+    }
+
+    function updateSnapshotInfo() {
+        const saved = localStorage.getItem('portfolioSnapshot');
+        const infoEl = document.getElementById('snapshotInfo');
+
+        if (!saved) {
+            infoEl.innerText = 'No snapshot saved';
+            return;
+        }
+
+        try {
+            const snapshot = JSON.parse(saved);
+            const date = new Date(snapshot.timestamp);
+            const formatted = date.toLocaleString();
+            infoEl.innerText = `Last saved: ${formatted}`;
+        } catch (e) {
+            infoEl.innerText = 'Snapshot available';
+        }
     }
 
     // --- HELPERS ---
@@ -467,21 +759,51 @@ permalink: /touzi/
     }
 
     // --- STORAGE ---
+    function saveCategoriesToStorage() {
+        localStorage.setItem('portfolioCategoriesV7', JSON.stringify(categories));
+        localStorage.setItem('categoryIdCounterV7', categoryIdCounter);
+    }
+
+    function loadCategoriesFromStorage() {
+        const savedCategories = localStorage.getItem('portfolioCategoriesV7');
+        const savedCounter = localStorage.getItem('categoryIdCounterV7');
+
+        if (savedCategories) {
+            try {
+                categories = JSON.parse(savedCategories);
+            } catch (e) {
+                console.error('Error loading categories:', e);
+            }
+        }
+
+        if (savedCounter) {
+            categoryIdCounter = parseInt(savedCounter);
+        }
+    }
+
     function saveToLocalStorage() {
-        const ids = ['exchangeRate', 'cash', 'cashCurrency', 'usStock', 'usStockCurrency', 'usBond', 'usBondCurrency', 'jpStock', 'jpStockCurrency', 'others', 'othersCurrency', 'income', 'incomeCurrency', 'expense', 'expenseCurrency', 'monthlyInvest', 'investCurrency', 'growthRate', 'years'];
+        const ids = ['exchangeRate', 'income', 'incomeCurrency', 'expense', 'expenseCurrency', 'monthlyInvest', 'investCurrency', 'growthRate', 'years'];
         const data = { lang: document.getElementById('languageSelect').value };
-        ids.forEach(id => data[id] = document.getElementById(id).value);
-        localStorage.setItem('portfolioDataV6', JSON.stringify(data));
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) data[id] = el.value;
+        });
+        localStorage.setItem('portfolioDataV7', JSON.stringify(data));
     }
 
     function loadFromLocalStorage() {
-        const saved = localStorage.getItem('portfolioDataV6');
+        const saved = localStorage.getItem('portfolioDataV7');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
-            if(data.lang) { document.getElementById('languageSelect').value = data.lang; setLanguage(data.lang); }
+            if(data.lang) {
+                document.getElementById('languageSelect').value = data.lang;
+                currentLang = data.lang;
+            }
             for (const key in data) {
-                if(key !== 'lang' && document.getElementById(key)) document.getElementById(key).value = data[key];
+                if(key !== 'lang' && document.getElementById(key)) {
+                    document.getElementById(key).value = data[key];
+                }
             }
         } catch (e) { console.error(e); }
     }
@@ -491,14 +813,16 @@ permalink: /touzi/
         saveToLocalStorage();
         const rate = parseFloat(document.getElementById('exchangeRate').value) || 150;
 
-        // 1. Assets
-        const cash = getStandardizedValue('cash', 'cashCurrency', rate);
-        const usStock = getStandardizedValue('usStock', 'usStockCurrency', rate);
-        const usBond = getStandardizedValue('usBond', 'usBondCurrency', rate);
-        const jpStock = getStandardizedValue('jpStock', 'jpStockCurrency', rate);
-        const others = getStandardizedValue('others', 'othersCurrency', rate);
+        // 1. Assets - Dynamic Categories
+        let categoryValues = [];
+        let totalJpy = 0;
 
-        const totalJpy = cash.jpy + usStock.jpy + usBond.jpy + jpStock.jpy + others.jpy;
+        categories.forEach(cat => {
+            const val = getStandardizedValue(cat.id, cat.id + 'Currency', rate);
+            categoryValues.push({ name: cat.name, value: val.jpy });
+            totalJpy += val.jpy;
+        });
+
         document.getElementById('totalDisplayJpy').innerText = formatJpy(totalJpy);
 
         // 2. Budget Logic
@@ -539,7 +863,7 @@ permalink: /touzi/
 
         const years = parseInt(document.getElementById('years').value) || 15;
 
-        updateDonut(cash.jpy, usStock.jpy, usBond.jpy, jpStock.jpy, others.jpy);
+        updateDonut(categoryValues);
         
         let labels = [], data = [], currentAmt = totalJpy, currentYear = new Date().getFullYear();
         labels.push(currentYear); data.push(currentAmt);
@@ -550,37 +874,37 @@ permalink: /touzi/
         updateLineChart(labels, data);
     }
 
-    function updateDonut(cash, usStock, usBond, jpStock, others) {
+    function updateDonut(categoryValues) {
         const ctx = document.getElementById('allocationChart');
         if (!ctx) return;
 
         if(donutChart) donutChart.destroy();
-        const t = translations[currentLang];
 
-        let dataSet = [cash, usStock, usBond, jpStock, others];
-        let labels = [t.t_cash, t.t_usStock, t.t_usBond, t.t_jpStock, t.t_others];
-        let total = dataSet.reduce((a, b) => a + b, 0);
-        let bgColors = ['#95a5a6', '#2980b9', '#f1c40f', '#e74c3c', '#9b59b6'];
+        // Prepare data from dynamic categories
+        let dataSet = [];
+        let labels = [];
+        let total = 0;
 
-        // Filter out zero values for better display
-        if (total > 0) {
-            let filteredData = [];
-            let filteredLabels = [];
-            let filteredColors = [];
+        // Color palette for dynamic categories
+        const colorPalette = [
+            '#95a5a6', '#2980b9', '#f1c40f', '#e74c3c', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#16a085', '#c0392b',
+            '#8e44ad', '#2c3e50', '#f39c12', '#27ae60', '#d35400'
+        ];
 
-            dataSet.forEach((val, idx) => {
-                if (val > 0) {
-                    filteredData.push(val);
-                    filteredLabels.push(labels[idx]);
-                    filteredColors.push(bgColors[idx]);
-                }
-            });
+        // Filter out zero values and prepare data
+        categoryValues.forEach((cat, idx) => {
+            if (cat.value > 0) {
+                dataSet.push(cat.value);
+                labels.push(cat.name);
+                total += cat.value;
+            }
+        });
 
-            dataSet = filteredData;
-            labels = filteredLabels;
-            bgColors = filteredColors;
-        } else {
-            // Empty state - show placeholder
+        let bgColors = dataSet.map((_, idx) => colorPalette[idx % colorPalette.length]);
+
+        // Empty state
+        if (total === 0) {
             dataSet = [1];
             labels = ['No Data'];
             bgColors = ['#ecf0f1'];
@@ -684,9 +1008,16 @@ permalink: /touzi/
     }
 
     window.onload = function() {
-        setLanguage('en'); 
+        loadCategoriesFromStorage();
         loadFromLocalStorage();
-        document.querySelectorAll('input[type="text"]').forEach(input => formatInput(input));
+        setLanguage('en');
+        renderCategories();
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            if (!input.classList.contains('category-name')) {
+                formatInput(input);
+            }
+        });
+        updateSnapshotInfo();
         update();
     };
 </script>
