@@ -140,6 +140,67 @@ permalink: /ai/
       min-height: 120px;
       font-size: 15px;
       line-height: 1.6;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .answer-box {
+      position: relative;
+    }
+
+    .answer-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 15% 20%, rgba(124, 92, 255, 0.12), transparent 45%),
+                  radial-gradient(circle at 85% 0%, rgba(91, 59, 227, 0.14), transparent 40%);
+      opacity: 0;
+      transition: opacity .3s ease;
+      pointer-events: none;
+    }
+
+    .answer-box.streaming .answer-glow {
+      opacity: 1;
+      animation: glowMove 2.2s ease-in-out infinite;
+    }
+
+    @keyframes glowMove {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .typing-indicator {
+      display: none;
+      position: absolute;
+      right: 20px;
+      bottom: 16px;
+      background: rgba(124, 92, 255, 0.12);
+      color: var(--primary-dark);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+
+    .answer-box.streaming .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: typing 1s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-4px); opacity: 1; }
     }
 
     .muted {
@@ -176,9 +237,16 @@ permalink: /ai/
       </div>
     </div>
 
-    <div class="card">
+    <div class="card answer-box" id="answerBox">
       <label>回答</label>
       <pre id="ans">这里会显示 AI 的回答～</pre>
+      <div class="answer-glow"></div>
+      <div class="typing-indicator">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        生成中
+      </div>
     </div>
 
     <div class="footer">Made with ❤️ by iehmltym</div>
@@ -193,6 +261,7 @@ permalink: /ai/
       const statusText = document.getElementById("statusText");
       const dot = document.getElementById("dot");
       const ans = document.getElementById("ans");
+      const answerBox = document.getElementById("answerBox");
 
       if (!question) {
         ans.textContent = "请先输入问题哦～";
@@ -201,6 +270,7 @@ permalink: /ai/
 
       statusText.textContent = "请求中...";
       dot.classList.add("loading");
+      answerBox.classList.add("streaming");
       ans.textContent = "";
 
       try {
@@ -240,6 +310,7 @@ permalink: /ai/
           "\n\n如果你在浏览器控制台看到 CORS 报错，需要后端放行 https://iehmltym.github.io";
       } finally {
         dot.classList.remove("loading");
+        answerBox.classList.remove("streaming");
       }
     }
   </script>
