@@ -215,8 +215,23 @@ permalink: /ai/
           throw new Error(`HTTP ${resp.status}: ${t}`);
         }
 
-        const data = await resp.json();
-        ans.textContent = data.answer ?? "(后端没有返回 answer 字段)";
+        if (!resp.body) {
+          const text = await resp.text();
+          ans.textContent = text || "(后端没有返回内容)";
+          statusText.textContent = "完成 ✅";
+          return;
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        statusText.textContent = "生成中...";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          ans.textContent += decoder.decode(value, { stream: true });
+        }
+        ans.textContent += decoder.decode();
         statusText.textContent = "完成 ✅";
       } catch (e) {
         statusText.textContent = "失败 ❌";
