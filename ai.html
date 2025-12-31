@@ -6,422 +6,197 @@ permalink: /ai/
 <html lang="zh">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light dark" />
-  <title>🌸 林志玲今日值班 AI小助手</title>
+  <title>MyAgent 接口测试页</title>
   <style>
-    :root {
-      --pink-100: #ffe6f2;
-      --pink-200: #ffc7e3;
-      --pink-300: #ff9fce;
-      --pink-400: #ff76b7;
-      --pink-500: #ff4fa6;
-      --purple-200: #d7c7ff;
-      --purple-300: #bfa3ff;
-      --purple-400: #a47bff;
-      --mint-200: #b8f2e6;
-      --mint-300: #84e6d4;
-      --yellow-200: #fff4b2;
-      --gray-900: #2b1f2f;
-      --shadow-soft: 0 12px 30px rgba(255, 79, 166, 0.18);
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-    }
-
     body {
-      margin: 0;
-      background: radial-gradient(circle at top, var(--pink-100), #ffffff 60%);
-      color: var(--gray-900);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 24px;
+      line-height: 1.5;
     }
-
-    header {
-      padding: 32px 24px 12px;
-      text-align: center;
-    }
-
-    .badge {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: var(--pink-200);
-      color: var(--gray-900);
-      font-weight: 600;
-      box-shadow: var(--shadow-soft);
-    }
-
-    h1 {
-      margin: 16px 0 8px;
-      font-size: clamp(28px, 5vw, 46px);
-      letter-spacing: 1px;
-    }
-
-    .subtitle {
-      font-size: 16px;
-      color: #6e5169;
-      margin: 0 auto;
-      max-width: 640px;
-    }
-
-    .sparkle {
-      display: inline-block;
-      animation: float 2.6s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
-      display: grid;
-      gap: 24px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 24px;
-      padding: 20px 22px;
-      box-shadow: var(--shadow-soft);
-      border: 2px solid var(--pink-100);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      font-size: 20px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-
     label {
-      font-size: 14px;
-      color: #69485f;
       display: block;
-      margin-bottom: 6px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      border: 2px solid var(--pink-200);
-      border-radius: 14px;
-      padding: 10px 12px;
-      font-size: 14px;
-      outline: none;
-      transition: 0.2s ease;
-      background: #fff9fc;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--purple-300);
-      box-shadow: 0 0 0 4px rgba(164, 123, 255, 0.15);
-    }
-
-    textarea {
-      min-height: 96px;
-      resize: vertical;
-    }
-
-    button {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 18px;
+      margin-top: 12px;
       font-weight: 600;
-      background: linear-gradient(120deg, var(--pink-400), var(--purple-400));
-      color: white;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: var(--shadow-soft);
     }
-
-    button:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 14px 30px rgba(164, 123, 255, 0.3);
+    textarea {
+      width: 100%;
+      max-width: 720px;
     }
-
-    .output {
-      background: #fff6fb;
-      border-radius: 18px;
-      padding: 14px 16px;
-      border: 1px dashed var(--pink-300);
-      min-height: 84px;
+    input[type="text"] {
+      width: 100%;
+      max-width: 720px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 8px 16px;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 12px;
+      border-radius: 6px;
       white-space: pre-wrap;
     }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--mint-200);
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      margin-right: 8px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: #7f5c75;
-      font-size: 13px;
-    }
-
     .row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #8b6a84;
+      margin-bottom: 16px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="badge">🌸 林志玲小助手 · 极端可爱模式 ON</div>
-    <h1><span class="sparkle">✨</span> 你的智能可爱后端控制台 <span class="sparkle">✨</span></h1>
-    <p class="subtitle">连接你的后端 API，一键体验对话 / RAG / Agent / Trace。把“可爱又强大”全部展示出来！</p>
-  </header>
+  <h2>MyAgent 接口测试页</h2>
+  <p>用于直接调用后端接口，支持 /ask（流式）以及 /rag/ask、/agent/ask（JSON）。</p>
 
-  <main>
-    <section class="card">
-      <h2>1. 基础设置</h2>
-      <div class="grid">
-        <div>
-          <label for="apiBase">后端 API Base URL</label>
-          <input id="apiBase" placeholder="例如：https://your-backend.onrender.com" />
-          <div class="hint">示例：Render/Vercel 的地址，记得允许 CORS。</div>
-        </div>
-        <div>
-          <label for="sessionId">会话 Session ID（可选）</label>
-          <input id="sessionId" placeholder="比如：lizhi-001" />
-        </div>
-        <div>
-          <label for="systemPrompt">可爱系统提示词</label>
-          <input id="systemPrompt" value="请用可爱的语气回答，简洁、温柔，像小可爱一样～" />
-        </div>
-      </div>
-    </section>
+  <div class="row">
+    <label for="apiBase">API Base</label>
+    <input id="apiBase" type="text" placeholder="例如：http://localhost:8000" />
+  </div>
 
-    <section class="card">
-      <h2>2. 可爱对话 /ask</h2>
-      <div class="grid">
-        <div>
-          <label for="askQuestion">输入问题</label>
-          <textarea id="askQuestion" placeholder="比如：现在几点？或者 3 + 5 = ?"></textarea>
-          <div class="row">
-            <button onclick="runAsk()">发送到小助手</button>
-            <span class="pill">流式返回</span>
-          </div>
-        </div>
-        <div>
-          <label>输出</label>
-          <div id="askOutput" class="output">等待你的问题～</div>
-        </div>
-      </div>
-    </section>
+  <div class="row">
+    <label for="endpoint">接口选择</label>
+    <select id="endpoint">
+      <option value="/ask">POST /ask（流式）</option>
+      <option value="/rag/ask">POST /rag/ask（JSON）</option>
+      <option value="/agent/ask">POST /agent/ask（JSON）</option>
+    </select>
+  </div>
 
-    <section class="card">
-      <h2>3. LLM 能力展示 /llm/complete</h2>
-      <div class="grid">
-        <div>
-          <label for="llmPrompt">Prompt</label>
-          <textarea id="llmPrompt" placeholder="例如：用一句话夸夸小助手"></textarea>
-          <div class="row">
-            <button onclick="runLlmComplete()">生成</button>
-            <span class="pill">同步返回</span>
-          </div>
-        </div>
-        <div>
-          <label>输出</label>
-          <div id="llmOutput" class="output">等你发指令～</div>
-        </div>
-      </div>
-    </section>
+  <div class="row">
+    <label for="question">问题</label>
+    <textarea id="question" rows="4" placeholder="输入问题，例如：用中文解释 REST API"></textarea>
+  </div>
 
-    <section class="card">
-      <h2>4. RAG 检索 /rag/ask</h2>
-      <div class="grid">
-        <div>
-          <label for="ragQuestion">问题</label>
-          <textarea id="ragQuestion" placeholder="例如：什么是 RAG？"></textarea>
-          <label for="ragMode">模式</label>
-          <select id="ragMode">
-            <option value="stuff">stuff</option>
-            <option value="map_reduce">map_reduce</option>
-            <option value="refine">refine</option>
-          </select>
-          <div class="row">
-            <button onclick="runRagAsk()">召唤知识库</button>
-          </div>
-        </div>
-        <div>
-          <label>输出</label>
-          <div id="ragOutput" class="output">等待检索～</div>
-        </div>
-      </div>
-    </section>
+  <div class="row">
+    <label for="systemPrompt">System Prompt（仅 /ask 可选）</label>
+    <textarea id="systemPrompt" rows="3" placeholder="可选：自定义 system prompt"></textarea>
+  </div>
 
-    <section class="card">
-      <h2>5. Agent 任务 /agent/ask</h2>
-      <div class="grid">
-        <div>
-          <label for="agentTask">任务描述</label>
-          <textarea id="agentTask" placeholder="例如：用工具算 12 + 34，再告诉我现在几点"></textarea>
-          <div class="row">
-            <button onclick="runAgentAsk()">执行任务</button>
-          </div>
-        </div>
-        <div>
-          <label>输出</label>
-          <div id="agentOutput" class="output">任务待命～</div>
-        </div>
-      </div>
-    </section>
+  <div class="row">
+    <label for="sessionId">Session ID（/ask 或 /agent/ask 可选）</label>
+    <input id="sessionId" type="text" placeholder="可选：同一会话可复用" />
+  </div>
 
-    <section class="card">
-      <h2>6. Trace 调试 /trace</h2>
-      <div class="row">
-        <button onclick="runTrace()">查看最近 Trace</button>
-        <span class="pill">调试可观测</span>
-      </div>
-      <div id="traceOutput" class="output" style="margin-top:12px;">准备就绪～</div>
-    </section>
-  </main>
+  <div class="row">
+    <label for="ragMode">RAG 模式（/rag/ask 可选）</label>
+    <input id="ragMode" type="text" placeholder="默认 stuff，可选 map_reduce 等" />
+  </div>
 
-  <footer>
-    Made with 💖 for 林志玲小助手 · 把后端能力变成超级可爱的前端展示！
-  </footer>
+  <div class="row">
+    <label for="ragTopK">RAG Top K（/rag/ask 可选）</label>
+    <input id="ragTopK" type="text" placeholder="默认 4" />
+  </div>
+
+  <button id="askBtn">发送请求</button>
+
+  <h3>返回结果</h3>
+  <pre id="answer">(等待请求)</pre>
 
   <script>
-    const getBaseUrl = () => {
-      const raw = document.getElementById("apiBase").value.trim();
-      if (!raw) {
-        throw new Error("请先填写后端 API Base URL");
-      }
-      return raw.replace(/\/+$/, "");
-    };
+    const apiBaseInput = document.getElementById("apiBase");
+    const endpointSelect = document.getElementById("endpoint");
+    const questionInput = document.getElementById("question");
+    const systemPromptInput = document.getElementById("systemPrompt");
+    const sessionIdInput = document.getElementById("sessionId");
+    const ragModeInput = document.getElementById("ragMode");
+    const ragTopKInput = document.getElementById("ragTopK");
+    const answerEl = document.getElementById("answer");
+    const askBtn = document.getElementById("askBtn");
 
-    const readStream = async (response, onChunk) => {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let done = false;
-      while (!done) {
-        const result = await reader.read();
-        done = result.done;
-        if (result.value) {
-          const chunk = decoder.decode(result.value, { stream: true });
-          onChunk(chunk);
+    function resolveApiBase() {
+      const value = apiBaseInput.value.trim();
+      if (value) {
+        return value.replace(/\/$/, "");
+      }
+      if (window.location.origin && window.location.origin !== "null") {
+        return window.location.origin;
+      }
+      return "http://localhost:8000";
+    }
+
+    function buildPayload() {
+      const question = questionInput.value.trim();
+      if (!question) {
+        answerEl.textContent = "请先输入问题。";
+        return null;
+      }
+
+      const payload = { question };
+      const systemPrompt = systemPromptInput.value.trim();
+      const sessionId = sessionIdInput.value.trim();
+      const endpoint = endpointSelect.value;
+
+      if (endpoint === "/ask") {
+        if (systemPrompt) payload.system_prompt = systemPrompt;
+        if (sessionId) payload.session_id = sessionId;
+      }
+
+      if (endpoint === "/agent/ask") {
+        payload.task = payload.question;
+        delete payload.question;
+        if (sessionId) payload.session_id = sessionId;
+      }
+
+      if (endpoint === "/rag/ask") {
+        payload.question = payload.question;
+        const ragMode = ragModeInput.value.trim();
+        const ragTopK = ragTopKInput.value.trim();
+        if (ragMode) payload.mode = ragMode;
+        if (ragTopK && !Number.isNaN(Number(ragTopK))) {
+          payload.top_k = Number(ragTopK);
         }
       }
-    };
 
-    const withLoading = (elementId, text) => {
-      const output = document.getElementById(elementId);
-      output.textContent = text;
-      return output;
-    };
+      return payload;
+    }
 
-    const runAsk = async () => {
-      const output = withLoading("askOutput", "小助手正在思考中～");
+    async function askQuestion() {
+      const endpoint = endpointSelect.value;
+      const payload = buildPayload();
+      if (!payload) {
+        return;
+      }
+
+      answerEl.textContent = "请求中...";
+      askBtn.disabled = true;
+
       try {
-        const res = await fetch(`${getBaseUrl()}/ask`, {
+        const response = await fetch(`${resolveApiBase()}${endpoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            question: document.getElementById("askQuestion").value,
-            system_prompt: document.getElementById("systemPrompt").value,
-            session_id: document.getElementById("sessionId").value || null,
-          }),
+          body: JSON.stringify(payload),
         });
-        output.textContent = "";
-        await readStream(res, (chunk) => {
-          output.textContent += chunk;
-        });
-      } catch (error) {
-        output.textContent = `出错啦：${error.message}`;
-      }
-    };
 
-    const runLlmComplete = async () => {
-      const output = withLoading("llmOutput", "生成中～");
-      try {
-        const res = await fetch(`${getBaseUrl()}/llm/complete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: document.getElementById("llmPrompt").value,
-            max_output_tokens: 512,
-            temperature: 0.7,
-          }),
-        });
-        const data = await res.json();
-        output.textContent = `${data.text}\n\nToken 使用：${JSON.stringify(data.usage, null, 2)}`;
-      } catch (error) {
-        output.textContent = `出错啦：${error.message}`;
-      }
-    };
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`HTTP ${response.status}: ${text}`);
+        }
 
-    const runRagAsk = async () => {
-      const output = withLoading("ragOutput", "正在检索知识～");
-      try {
-        const res = await fetch(`${getBaseUrl()}/rag/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            question: document.getElementById("ragQuestion").value,
-            mode: document.getElementById("ragMode").value,
-            top_k: 4,
-          }),
-        });
-        const data = await res.json();
-        output.textContent = `${data.answer}\n\nReferences: ${JSON.stringify(data.references, null, 2)}`;
-      } catch (error) {
-        output.textContent = `出错啦：${error.message}`;
-      }
-    };
+        if (endpoint === "/ask") {
+          answerEl.textContent = "";
+          if (!response.body) {
+            const text = await response.text();
+            answerEl.textContent = text || "(无返回内容)";
+            return;
+          }
 
-    const runAgentAsk = async () => {
-      const output = withLoading("agentOutput", "Agent 正在行动～");
-      try {
-        const res = await fetch(`${getBaseUrl()}/agent/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            task: document.getElementById("agentTask").value,
-            session_id: document.getElementById("sessionId").value || null,
-          }),
-        });
-        const data = await res.json();
-        output.textContent = `${data.result}\n\nMemory: ${data.memory}`;
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            answerEl.textContent += decoder.decode(value, { stream: true });
+          }
+        } else {
+          const data = await response.json();
+          answerEl.textContent = JSON.stringify(data, null, 2);
+        }
       } catch (error) {
-        output.textContent = `出错啦：${error.message}`;
+        answerEl.textContent = `失败：${error.message}`;
+      } finally {
+        askBtn.disabled = false;
       }
-    };
+    }
 
-    const runTrace = async () => {
-      const output = withLoading("traceOutput", "正在抓取 Trace～");
-      try {
-        const res = await fetch(`${getBaseUrl()}/trace`);
-        const data = await res.json();
-        output.textContent = JSON.stringify(data.spans, null, 2);
-      } catch (error) {
-        output.textContent = `出错啦：${error.message}`;
-      }
-    };
+    apiBaseInput.value = resolveApiBase();
+    askBtn.addEventListener("click", askQuestion);
   </script>
 </body>
 </html>
