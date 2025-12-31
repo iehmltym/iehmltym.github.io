@@ -470,28 +470,28 @@ permalink: /ai/
   <div class="wrap">
     <div class="hero">
       <div>
-        <h1>💖 林志玲今日值班AI小助手</h1>
+        <h1>🌸林志玲今日值班 AI小助手</h1>
         <p>输入问题，点击提问，获取温柔可爱的回答~</p>
         <p class="muted">后端地址：<code id="apiBase"></code></p>
         <div class="hero-tags">
-          <span class="tag emphasis">默认可爱模式</span>
+          <span class="tag emphasis">默认温柔模式</span>
           <span class="tag">架构建议</span>
           <span class="tag">RAG 资料检索</span>
-          <span class="tag">512MB 轻量落地</span>
+          <span class="tag">轻量落地</span>
           <span class="tag">流式输出</span>
         </div>
       </div>
       <div class="hero-art">
         <div class="mascot">🧭🧠</div>
         <div class="sparkles">✨ ⚡️ 📈 ✨</div>
-        <p class="muted">Render 512MB · 轻量实战</p>
+        <p class="muted">Render轻量实战</p>
       </div>
     </div>
 
 
     <div class="card">
       <label for="q">你的问题</label>
-      <textarea id="q" placeholder="例如：按结构说明 LangChain 核心能力与 512MB 落地建议"></textarea>
+      <textarea id="q" placeholder="例如：按结构说明 LangChain 核心能力与落地建议"></textarea>
 
       <div class="api-input">
         <label for="apiInput">API 地址</label>
@@ -641,7 +641,7 @@ permalink: /ai/
     </div>
 
     <div class="card">
-      <h3 class="section-title">🛰️ 运营控制台（超轻量 512MB 友好）</h3>
+      <h3 class="section-title">🛰️ 运营控制台（超轻量友好）</h3>
       <p class="section-subtitle">一键查看系统状态、近期请求、缓存与会话，运营更稳。</p>
       <div class="action-bar">
         <button class="ghost" onclick="loadSystemInfo()">刷新系统状态</button>
@@ -764,7 +764,7 @@ permalink: /ai/
         const data = await resp.json();
         renderBlueprintSection("blueprintCore", "核心能力", data.sections.core);
         renderBlueprintSection("blueprintUse", "典型用法", data.sections.use);
-        renderBlueprintSection("blueprintRender", "Render 512MB", data.sections.render);
+        renderBlueprintSection("blueprintRender", "Render", data.sections.render);
         renderBlueprintSection("blueprintNext", "下一步升级", data.sections.next);
         const tips = document.getElementById("blueprintTips");
         tips.innerHTML = "";
@@ -891,12 +891,12 @@ permalink: /ai/
 
     function fillAdvisorPrompt() {
       document.getElementById("q").value =
-        "按“核心能力（LangChain 能做什么）→ 典型用法 → Render 512MB 落地建议 → 下一步升级”的结构说明。";
+        "按“核心能力（LangChain 能做什么）→ 典型用法 → Render 落地建议 → 下一步升级”的结构说明。";
     }
 
     function fillRagPrompt() {
       document.getElementById("q").value =
-        "结合 RAG、Agent、Router、Streaming 的工程价值，给出落地优先级和 512MB 实例注意事项。";
+        "结合 RAG、Agent、Router、Streaming 的工程价值，给出落地优先级实例注意事项。";
     }
 
     async function ask() {
