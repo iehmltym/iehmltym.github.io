@@ -80,6 +80,23 @@ permalink: /ai/
       color: var(--muted);
     }
 
+    .api-config {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .api-input {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      background: var(--surface);
+      color: var(--text);
+      min-width: 220px;
+    }
+
     .hero {
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
       border: 1px solid var(--border);
@@ -195,6 +212,10 @@ permalink: /ai/
       100% { transform: scale(1); opacity: 0.6; }
     }
 
+    .answer-box {
+      position: relative;
+    }
+
     .answer {
       white-space: pre-wrap;
       background: var(--surface-2);
@@ -205,18 +226,23 @@ permalink: /ai/
       font-size: 15px;
       line-height: 1.7;
       position: relative;
+      z-index: 1;
       overflow: hidden;
     }
 
-    .answer.streaming::after {
-      content: "";
+    .answer-glow {
       position: absolute;
       inset: 0;
       background: radial-gradient(circle at 15% 20%, rgba(124, 92, 255, 0.12), transparent 45%),
                   radial-gradient(circle at 85% 0%, rgba(91, 59, 227, 0.14), transparent 40%);
+      opacity: 0;
+      transition: opacity .2s ease;
+      pointer-events: none;
+    }
+
+    .answer-box.streaming .answer-glow {
       opacity: 1;
       animation: glowMove 2.2s ease-in-out infinite;
-      pointer-events: none;
     }
 
     @keyframes glowMove {
@@ -318,7 +344,11 @@ permalink: /ai/
     <header>
       <div class="brand">
         <span>🌸 林志玲今日值班 AI小助手</span>
-        <span class="pill" aria-live="polite">API: <strong id="apiBase">--</strong></span>
+        <div class="api-config">
+          <span class="pill" aria-live="polite">API: <strong id="apiBase">--</strong></span>
+          <input class="api-input" id="apiInput" type="url" placeholder="https://your-api.com" aria-label="API Base URL" />
+          <button class="toggle" type="button" id="apiSave">保存 API</button>
+        </div>
       </div>
       <div class="toolbar">
         <button class="toggle" type="button" id="themeToggle" aria-pressed="false">切换暗色模式</button>
@@ -354,7 +384,10 @@ permalink: /ai/
 
       <div class="card">
         <label>回答</label>
-        <div class="answer" id="ans" aria-live="polite">这里会显示 AI 的回答～</div>
+      <div class="answer-box" id="answerBox">
+        <pre class="answer" id="ans" aria-live="polite">这里会显示 AI 的回答～</pre>
+        <div class="answer-glow" aria-hidden="true"></div>
+      </div>
         <div class="row">
           <span class="typing-indicator" id="typing">
             <span class="typing-dot"></span>
@@ -373,9 +406,12 @@ permalink: /ai/
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const API_BASE = "https://myagent-mhrq.onrender.com";
+    const DEFAULT_API_BASE = "https://myagent-mhrq.onrender.com";
+    let API_BASE = localStorage.getItem("apiBase") || DEFAULT_API_BASE;
     const root = document.getElementById("root");
     const apiBase = document.getElementById("apiBase");
+    const apiInput = document.getElementById("apiInput");
+    const apiSave = document.getElementById("apiSave");
     const askBtn = document.getElementById("askBtn");
     const clearBtn = document.getElementById("clearBtn");
     const copyBtn = document.getElementById("copyBtn");
@@ -383,11 +419,13 @@ permalink: /ai/
     const dot = document.getElementById("dot");
     const ans = document.getElementById("ans");
     const typing = document.getElementById("typing");
+    const answerBox = document.getElementById("answerBox");
     const toast = document.getElementById("toast");
     const themeToggle = document.getElementById("themeToggle");
     const questionInput = document.getElementById("q");
 
     apiBase.textContent = API_BASE;
+    apiInput.value = API_BASE;
 
     const savedTheme = localStorage.getItem("theme") || "light";
     root.setAttribute("data-theme", savedTheme);
@@ -402,6 +440,18 @@ permalink: /ai/
       showToast(`已切换到${next === "dark" ? "暗色" : "亮色"}模式`);
     });
 
+    apiSave.addEventListener("click", () => {
+      const next = apiInput.value.trim();
+      if (!next) {
+        showToast("请输入有效的 API 地址", "error");
+        return;
+      }
+      API_BASE = next.replace(/\/$/, "");
+      localStorage.setItem("apiBase", API_BASE);
+      apiBase.textContent = API_BASE;
+      showToast("API 地址已保存");
+    });
+
     function showToast(message, type = "info") {
       toast.textContent = message;
       toast.style.borderColor = type === "error" ? "var(--danger)" : "var(--border)";
@@ -413,7 +463,7 @@ permalink: /ai/
       statusText.textContent = text;
       dot.classList.toggle("loading", loading);
       typing.style.display = loading ? "inline-flex" : "none";
-      ans.classList.toggle("streaming", loading);
+      answerBox.classList.toggle("streaming", loading);
       askBtn.disabled = loading;
     }
 
