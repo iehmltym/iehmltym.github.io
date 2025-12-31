@@ -11,561 +11,417 @@ permalink: /ai/
   <title>🌸 林志玲今日值班 AI小助手</title>
   <style>
     :root {
-      --bg: #f6f7fb;
-      --surface: #ffffff;
-      --surface-2: #f2f4ff;
-      --primary: #7c5cff;
-      --primary-dark: #5a3ae3;
-      --text: #1c2130;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --shadow: 0 12px 32px rgba(124, 92, 255, 0.12);
-      --radius: 18px;
-      --success: #16a34a;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --focus: 0 0 0 4px rgba(124, 92, 255, 0.2);
+      --pink-100: #ffe6f2;
+      --pink-200: #ffc7e3;
+      --pink-300: #ff9fce;
+      --pink-400: #ff76b7;
+      --pink-500: #ff4fa6;
+      --purple-200: #d7c7ff;
+      --purple-300: #bfa3ff;
+      --purple-400: #a47bff;
+      --mint-200: #b8f2e6;
+      --mint-300: #84e6d4;
+      --yellow-200: #fff4b2;
+      --gray-900: #2b1f2f;
+      --shadow-soft: 0 12px 30px rgba(255, 79, 166, 0.18);
     }
 
-    [data-theme="dark"] {
-      --bg: #0e1118;
-      --surface: #151a25;
-      --surface-2: #1a2132;
-      --text: #e5e7eb;
-      --muted: #98a2b3;
-      --border: #2a3347;
-      --shadow: 0 16px 48px rgba(8, 10, 16, 0.4);
+    * {
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
     }
-
-    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Segoe UI", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", Arial;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    a { color: inherit; text-decoration: none; }
-
-    .wrap {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 32px 18px 80px;
+      background: radial-gradient(circle at top, var(--pink-100), #ffffff 60%);
+      color: var(--gray-900);
     }
 
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
+      padding: 32px 24px 12px;
+      text-align: center;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .pill {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .api-config {
-      display: flex;
-      align-items: center;
+    .badge {
+      display: inline-flex;
       gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .api-input {
-      border: 1px solid var(--border);
+      align-items: center;
+      padding: 8px 16px;
       border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      background: var(--surface);
-      color: var(--text);
-      min-width: 220px;
+      background: var(--pink-200);
+      color: var(--gray-900);
+      font-weight: 600;
+      box-shadow: var(--shadow-soft);
     }
 
-    .hero {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 26px;
-      box-shadow: var(--shadow);
+    h1 {
+      margin: 16px 0 8px;
+      font-size: clamp(28px, 5vw, 46px);
+      letter-spacing: 1px;
     }
 
-    .hero h1 {
-      margin: 0 0 6px;
-      font-size: clamp(22px, 2.6vw, 30px);
+    .subtitle {
+      font-size: 16px;
+      color: #6e5169;
+      margin: 0 auto;
+      max-width: 640px;
     }
 
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
+    .sparkle {
+      display: inline-block;
+      animation: float 2.6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow-soft);
+      border: 2px solid var(--pink-100);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 18px;
-      margin-top: 18px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-      position: relative;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 
     label {
+      font-size: 14px;
+      color: #69485f;
       display: block;
-      font-weight: 600;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 2px solid var(--pink-200);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.2s ease;
+      background: #fff9fc;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--purple-300);
+      box-shadow: 0 0 0 4px rgba(164, 123, 255, 0.15);
     }
 
     textarea {
-      width: 100%;
-      min-height: 150px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 15px;
-      outline: none;
-      transition: border .2s, box-shadow .2s;
-      background: var(--surface);
-      color: var(--text);
+      min-height: 96px;
       resize: vertical;
     }
 
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: var(--focus);
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      background: linear-gradient(120deg, var(--pink-400), var(--purple-400));
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow-soft);
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 30px rgba(164, 123, 255, 0.3);
+    }
+
+    .output {
+      background: #fff6fb;
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 1px dashed var(--pink-300);
+      min-height: 84px;
+      white-space: pre-wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--mint-200);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #7f5c75;
+      font-size: 13px;
     }
 
     .row {
       display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-
-    button {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 12px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: transform .06s, background .2s;
-    }
-
-    button.secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    button:hover { background: var(--primary-dark); }
-    button.secondary:hover { background: var(--surface-2); }
-    button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .status {
-      font-size: 13px;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #d1d5db;
-      display: inline-block;
-    }
-
-    .dot.loading {
-      background: var(--primary);
-      animation: pulse 1s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.5); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.6; }
-    }
-
-    .answer-box {
-      position: relative;
-    }
-
-    .answer {
-      white-space: pre-wrap;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: 14px;
-      min-height: 160px;
-      font-size: 15px;
-      line-height: 1.7;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-    }
-
-    .answer-glow {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 15% 20%, rgba(124, 92, 255, 0.12), transparent 45%),
-                  radial-gradient(circle at 85% 0%, rgba(91, 59, 227, 0.14), transparent 40%);
-      opacity: 0;
-      transition: opacity .2s ease;
-      pointer-events: none;
-    }
-
-    .answer-box.streaming .answer-glow {
-      opacity: 1;
-      animation: glowMove 2.2s ease-in-out infinite;
-    }
-
-    @keyframes glowMove {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
-      100% { transform: translateY(0px); }
-    }
-
-    .typing-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(124, 92, 255, 0.12);
-      color: var(--primary-dark);
-    }
-
-    .typing-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--primary);
-      animation: typing 1s infinite ease-in-out;
-    }
-    .typing-dot:nth-child(2) { animation-delay: .2s; }
-    .typing-dot:nth-child(3) { animation-delay: .4s; }
-
-    @keyframes typing {
-      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-      40% { transform: translateY(-4px); opacity: 1; }
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .chip {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      font-size: 12px;
-      color: var(--muted);
-      background: var(--surface);
-      cursor: pointer;
-    }
-
-    .toolbar {
-      display: flex;
-      align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .toggle {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 999px;
-      padding: 6px 12px;
+    .hint {
       font-size: 12px;
-      cursor: pointer;
-    }
-
-    .toast {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      box-shadow: var(--shadow);
-      display: none;
-      font-size: 13px;
-    }
-
-    .toast.show { display: block; }
-
-    .footer {
-      margin-top: 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .muted { color: var(--muted); font-size: 12px; }
-
-    @media (max-width: 640px) {
-      .wrap { padding: 24px 16px 60px; }
-      header { flex-direction: column; align-items: flex-start; }
+      color: #8b6a84;
     }
   </style>
 </head>
 <body>
-  <div class="wrap" data-theme="light" id="root">
-    <header>
-      <div class="brand">
-        <span>🌸 林志玲今日值班 AI小助手</span>
-        <div class="api-config">
-          <span class="pill" aria-live="polite">API: <strong id="apiBase">--</strong></span>
-          <input class="api-input" id="apiInput" type="url" placeholder="https://your-api.com" aria-label="API Base URL" />
-          <button class="toggle" type="button" id="apiSave">保存 API</button>
-        </div>
-      </div>
-      <div class="toolbar">
-        <button class="toggle" type="button" id="themeToggle" aria-pressed="false">切换暗色模式</button>
-      </div>
-    </header>
+  <header>
+    <div class="badge">🌸 林志玲小助手 · 极端可爱模式 ON</div>
+    <h1><span class="sparkle">✨</span> 你的智能可爱后端控制台 <span class="sparkle">✨</span></h1>
+    <p class="subtitle">连接你的后端 API，一键体验对话 / RAG / Agent / Trace。把“可爱又强大”全部展示出来！</p>
+  </header>
 
-    <section class="hero">
-      <h1>温柔、专业、好用的 AI 问答体验</h1>
-      <p>输入问题，点击提问，获得实时流式回答。支持移动端体验，细节更精致。</p>
-    </section>
-
-    <section class="grid">
-      <div class="card">
-        <label for="q">你的问题</label>
-        <textarea id="q" placeholder="例如：用中文解释 REST API，并给一个例子"></textarea>
-
-        <div class="chips" role="list">
-          <button class="chip" type="button" data-q="用三句话解释 REST API">REST API</button>
-          <button class="chip" type="button" data-q="请生成一个旅行计划，适合两日游">旅行计划</button>
-          <button class="chip" type="button" data-q="总结一下前端性能优化的关键点">性能优化</button>
+  <main>
+    <section class="card">
+      <h2>1. 基础设置</h2>
+      <div class="grid">
+        <div>
+          <label for="apiBase">后端 API Base URL</label>
+          <input id="apiBase" placeholder="例如：https://your-backend.onrender.com" />
+          <div class="hint">示例：Render/Vercel 的地址，记得允许 CORS。</div>
         </div>
-
-        <div class="row">
-          <button id="askBtn" type="button">提问</button>
-          <button id="clearBtn" class="secondary" type="button">清空</button>
-          <span class="status" role="status" aria-live="polite">
-            <span id="dot" class="dot"></span>
-            <span id="statusText">等待输入</span>
-          </span>
+        <div>
+          <label for="sessionId">会话 Session ID（可选）</label>
+          <input id="sessionId" placeholder="比如：lizhi-001" />
         </div>
-        <p class="muted">提示：后端需要放行 GitHub Pages 域名的 CORS。</p>
-      </div>
-
-      <div class="card">
-        <label>回答</label>
-        <div class="answer-box" id="answerBox">
-          <pre class="answer" id="ans" aria-live="polite">这里会显示 AI 的回答～</pre>
-          <div class="answer-glow" aria-hidden="true"></div>
+        <div>
+          <label for="systemPrompt">可爱系统提示词</label>
+          <input id="systemPrompt" value="请用可爱的语气回答，简洁、温柔，像小可爱一样～" />
         </div>
-        <div class="row">
-          <span class="typing-indicator" id="typing">
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            生成中
-          </span>
-          <button id="copyBtn" class="secondary" type="button">复制回答</button>
-        </div>
-        <details class="muted" id="debugPanel" style="margin-top: 10px;">
-          <summary>调试信息</summary>
-          <div id="debugInfo">暂无</div>
-        </details>
       </div>
     </section>
 
-    <div class="footer">Made with ❤️ by iehmltym</div>
-  </div>
+    <section class="card">
+      <h2>2. 可爱对话 /ask</h2>
+      <div class="grid">
+        <div>
+          <label for="askQuestion">输入问题</label>
+          <textarea id="askQuestion" placeholder="比如：现在几点？或者 3 + 5 = ?"></textarea>
+          <div class="row">
+            <button onclick="runAsk()">发送到小助手</button>
+            <span class="pill">流式返回</span>
+          </div>
+        </div>
+        <div>
+          <label>输出</label>
+          <div id="askOutput" class="output">等待你的问题～</div>
+        </div>
+      </div>
+    </section>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <section class="card">
+      <h2>3. LLM 能力展示 /llm/complete</h2>
+      <div class="grid">
+        <div>
+          <label for="llmPrompt">Prompt</label>
+          <textarea id="llmPrompt" placeholder="例如：用一句话夸夸小助手"></textarea>
+          <div class="row">
+            <button onclick="runLlmComplete()">生成</button>
+            <span class="pill">同步返回</span>
+          </div>
+        </div>
+        <div>
+          <label>输出</label>
+          <div id="llmOutput" class="output">等你发指令～</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>4. RAG 检索 /rag/ask</h2>
+      <div class="grid">
+        <div>
+          <label for="ragQuestion">问题</label>
+          <textarea id="ragQuestion" placeholder="例如：什么是 RAG？"></textarea>
+          <label for="ragMode">模式</label>
+          <select id="ragMode">
+            <option value="stuff">stuff</option>
+            <option value="map_reduce">map_reduce</option>
+            <option value="refine">refine</option>
+          </select>
+          <div class="row">
+            <button onclick="runRagAsk()">召唤知识库</button>
+          </div>
+        </div>
+        <div>
+          <label>输出</label>
+          <div id="ragOutput" class="output">等待检索～</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5. Agent 任务 /agent/ask</h2>
+      <div class="grid">
+        <div>
+          <label for="agentTask">任务描述</label>
+          <textarea id="agentTask" placeholder="例如：用工具算 12 + 34，再告诉我现在几点"></textarea>
+          <div class="row">
+            <button onclick="runAgentAsk()">执行任务</button>
+          </div>
+        </div>
+        <div>
+          <label>输出</label>
+          <div id="agentOutput" class="output">任务待命～</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>6. Trace 调试 /trace</h2>
+      <div class="row">
+        <button onclick="runTrace()">查看最近 Trace</button>
+        <span class="pill">调试可观测</span>
+      </div>
+      <div id="traceOutput" class="output" style="margin-top:12px;">准备就绪～</div>
+    </section>
+  </main>
+
+  <footer>
+    Made with 💖 for 林志玲小助手 · 把后端能力变成超级可爱的前端展示！
+  </footer>
 
   <script>
-    const DEFAULT_API_BASE = "https://myagent-mhrq.onrender.com";
-    let API_BASE = localStorage.getItem("apiBase") || DEFAULT_API_BASE;
-    const root = document.getElementById("root");
-    const apiBase = document.getElementById("apiBase");
-    const apiInput = document.getElementById("apiInput");
-    const apiSave = document.getElementById("apiSave");
-    const askBtn = document.getElementById("askBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const statusText = document.getElementById("statusText");
-    const dot = document.getElementById("dot");
-    const ans = document.getElementById("ans");
-    const typing = document.getElementById("typing");
-    const answerBox = document.getElementById("answerBox");
-    const debugInfo = document.getElementById("debugInfo");
-    const toast = document.getElementById("toast");
-    const themeToggle = document.getElementById("themeToggle");
-    const questionInput = document.getElementById("q");
-
-    apiBase.textContent = API_BASE;
-    apiInput.value = API_BASE;
-
-    const savedTheme = localStorage.getItem("theme") || "light";
-    root.setAttribute("data-theme", savedTheme);
-    themeToggle.setAttribute("aria-pressed", savedTheme === "dark");
-
-    themeToggle.addEventListener("click", () => {
-      const current = root.getAttribute("data-theme");
-      const next = current === "dark" ? "light" : "dark";
-      root.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-      themeToggle.setAttribute("aria-pressed", next === "dark");
-      showToast(`已切换到${next === "dark" ? "暗色" : "亮色"}模式`);
-    });
-
-    apiSave.addEventListener("click", () => {
-      const next = apiInput.value.trim();
-      if (!next) {
-        showToast("请输入有效的 API 地址", "error");
-        return;
+    const getBaseUrl = () => {
+      const raw = document.getElementById("apiBase").value.trim();
+      if (!raw) {
+        throw new Error("请先填写后端 API Base URL");
       }
-      API_BASE = next.replace(/\/$/, "");
-      localStorage.setItem("apiBase", API_BASE);
-      apiBase.textContent = API_BASE;
-      showToast("API 地址已保存");
-    });
+      return raw.replace(/\/+$/, "");
+    };
 
-    function showToast(message, type = "info") {
-      toast.textContent = message;
-      toast.style.borderColor = type === "error" ? "var(--danger)" : "var(--border)";
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 2200);
-    }
-
-    function setStatus(text, loading = false) {
-      statusText.textContent = text;
-      dot.classList.toggle("loading", loading);
-      typing.style.display = loading ? "inline-flex" : "none";
-      answerBox.classList.toggle("streaming", loading);
-      askBtn.disabled = loading;
-    }
-
-    function setAnswer(text) {
-      ans.textContent = text;
-    }
-
-    async function ask() {
-      const question = questionInput.value.trim();
-      if (!question) {
-        showToast("请先输入问题哦～", "error");
-        return;
+    const readStream = async (response, onChunk) => {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      while (!done) {
+        const result = await reader.read();
+        done = result.done;
+        if (result.value) {
+          const chunk = decoder.decode(result.value, { stream: true });
+          onChunk(chunk);
+        }
       }
+    };
 
-      setAnswer("");
-      setStatus("请求中...", true);
+    const withLoading = (elementId, text) => {
+      const output = document.getElementById(elementId);
+      output.textContent = text;
+      return output;
+    };
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-
+    const runAsk = async () => {
+      const output = withLoading("askOutput", "小助手正在思考中～");
       try {
-        const resp = await fetch(`${API_BASE}/ask`, {
+        const res = await fetch(`${getBaseUrl()}/ask`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
-          signal: controller.signal
+          body: JSON.stringify({
+            question: document.getElementById("askQuestion").value,
+            system_prompt: document.getElementById("systemPrompt").value,
+            session_id: document.getElementById("sessionId").value || null,
+          }),
         });
-
-        if (!resp.ok) {
-          const text = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${text}`);
-        }
-
-        const contentType = resp.headers.get("content-type") || "(unknown)";
-        debugInfo.textContent = `HTTP ${resp.status} | content-type: ${contentType}`;
-
-        if (!resp.body) {
-          const text = await resp.text();
-          setAnswer(text || "(后端没有返回内容)");
-          setStatus("完成 ✅", false);
-          return;
-        }
-
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let received = "";
-        setStatus("生成中...", true);
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          received += chunk;
-          ans.textContent += chunk;
-        }
-        received += decoder.decode();
-        ans.textContent += decoder.decode();
-
-        if (!received.trim()) {
-          setAnswer("(后端没有返回内容)");
-          debugInfo.textContent += " | body length: 0";
-        } else {
-          debugInfo.textContent += ` | body length: ${received.length}`;
-        }
-        setStatus("完成 ✅", false);
-      } catch (e) {
-        setStatus("失败 ❌", false);
-        setAnswer(
-          "请求失败：\n" + e.message +
-          "\n\n如果浏览器控制台看到 CORS 报错，需要后端放行 GitHub Pages 域名。"
-        );
-        console.error("Request failed:", e);
-      } finally {
-        clearTimeout(timeout);
+        output.textContent = "";
+        await readStream(res, (chunk) => {
+          output.textContent += chunk;
+        });
+      } catch (error) {
+        output.textContent = `出错啦：${error.message}`;
       }
-    }
+    };
 
-    askBtn.addEventListener("click", ask);
-    clearBtn.addEventListener("click", () => {
-      questionInput.value = "";
-      setAnswer("这里会显示 AI 的回答～");
-      setStatus("等待输入", false);
-    });
+    const runLlmComplete = async () => {
+      const output = withLoading("llmOutput", "生成中～");
+      try {
+        const res = await fetch(`${getBaseUrl()}/llm/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: document.getElementById("llmPrompt").value,
+            max_output_tokens: 512,
+            temperature: 0.7,
+          }),
+        });
+        const data = await res.json();
+        output.textContent = `${data.text}\n\nToken 使用：${JSON.stringify(data.usage, null, 2)}`;
+      } catch (error) {
+        output.textContent = `出错啦：${error.message}`;
+      }
+    };
 
-    copyBtn.addEventListener("click", async () => {
-      const text = ans.textContent.trim();
-      if (!text) return;
-      await navigator.clipboard.writeText(text);
-      showToast("回答已复制");
-    });
+    const runRagAsk = async () => {
+      const output = withLoading("ragOutput", "正在检索知识～");
+      try {
+        const res = await fetch(`${getBaseUrl()}/rag/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: document.getElementById("ragQuestion").value,
+            mode: document.getElementById("ragMode").value,
+            top_k: 4,
+          }),
+        });
+        const data = await res.json();
+        output.textContent = `${data.answer}\n\nReferences: ${JSON.stringify(data.references, null, 2)}`;
+      } catch (error) {
+        output.textContent = `出错啦：${error.message}`;
+      }
+    };
 
-    document.querySelectorAll(".chip").forEach((chip) => {
-      chip.addEventListener("click", () => {
-        questionInput.value = chip.dataset.q || "";
-        questionInput.focus();
-      });
-    });
+    const runAgentAsk = async () => {
+      const output = withLoading("agentOutput", "Agent 正在行动～");
+      try {
+        const res = await fetch(`${getBaseUrl()}/agent/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task: document.getElementById("agentTask").value,
+            session_id: document.getElementById("sessionId").value || null,
+          }),
+        });
+        const data = await res.json();
+        output.textContent = `${data.result}\n\nMemory: ${data.memory}`;
+      } catch (error) {
+        output.textContent = `出错啦：${error.message}`;
+      }
+    };
+
+    const runTrace = async () => {
+      const output = withLoading("traceOutput", "正在抓取 Trace～");
+      try {
+        const res = await fetch(`${getBaseUrl()}/trace`);
+        const data = await res.json();
+        output.textContent = JSON.stringify(data.spans, null, 2);
+      } catch (error) {
+        output.textContent = `出错啦：${error.message}`;
+      }
+    };
   </script>
 </body>
 </html>
