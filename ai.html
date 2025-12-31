@@ -497,6 +497,16 @@ permalink: /ai/
           throw new Error(`HTTP ${resp.status}: ${text}`);
         }
 
+        const contentType = resp.headers.get("content-type") || "";
+
+        if (contentType.includes("application/json")) {
+          const data = await resp.json();
+          const text = data.answer || data.message || JSON.stringify(data, null, 2);
+          setAnswer(text || "(后端没有返回内容)");
+          setStatus("完成 ✅", false);
+          return;
+        }
+
         if (!resp.body) {
           const text = await resp.text();
           setAnswer(text || "(后端没有返回内容)");
@@ -506,14 +516,34 @@ permalink: /ai/
 
         const reader = resp.body.getReader();
         const decoder = new TextDecoder("utf-8");
+        let buffer = "";
         setStatus("生成中...", true);
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
-          ans.textContent += decoder.decode(value, { stream: true });
+          const chunk = decoder.decode(value, { stream: true });
+          if (contentType.includes("text/event-stream")) {
+            buffer += chunk;
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            for (const line of lines) {
+              if (line.startsWith("data:")) {
+                const payload = line.slice(5).trim();
+                if (payload) {
+                  ans.textContent += payload;
+                }
+              }
+            }
+          } else {
+            ans.textContent += chunk;
+          }
         }
         ans.textContent += decoder.decode();
+        if (buffer && contentType.includes("text/event-stream")) {
+          const leftover = buffer.replace(/^data:/g, "").trim();
+          if (leftover) ans.textContent += leftover;
+        }
         setStatus("完成 ✅", false);
       } catch (e) {
         setStatus("失败 ❌", false);
@@ -521,6 +551,7 @@ permalink: /ai/
           "请求失败：\n" + e.message +
           "\n\n如果浏览器控制台看到 CORS 报错，需要后端放行 GitHub Pages 域名。"
         );
+        console.error("Request failed:", e);
       } finally {
         clearTimeout(timeout);
       }
