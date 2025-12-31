@@ -584,106 +584,6 @@ permalink: /ai/
       color: var(--muted);
       margin-top: 6px;
     }
-  
-    /* ==============================
-       提问按钮：更明显，位置更靠上
-       默认无柔光；focus 才柔光
-       ============================== */
-
-    .ask-bar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    .ask-btn{
-      background: var(--primary);
-      color:#fff;
-      border:none;
-      padding: 12px 22px;
-      border-radius: 14px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor:pointer;
-      box-shadow:none; /* 默认无柔光 */
-    }
-
-    .ask-btn:hover{
-      background: var(--primary-dark);
-    }
-
-    .ask-btn:focus{
-      outline:none;
-      box-shadow: 0 0 0 5px rgba(255, 122, 217, 0.22); /* focus 柔光 */
-    }
-
-    @media (max-width: 520px){
-      .ask-btn{ width:100%; }
-    }
-
-    /* ==============================
-       输入框统一：默认无柔光；focus 才柔光
-       ============================== */
-
-    /* 问题区：默认粉色边框（无柔光） */
-    #q {
-      border: 2px solid rgba(255, 122, 217, 0.55);
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: none;
-      caret-color: var(--primary-dark);
-    }
-
-    #q::placeholder { color: rgba(240, 78, 191, 0.55); }
-
-    #q:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 5px rgba(255, 122, 217, 0.22);
-    }
-
-    textarea,
-    input[type="text"],
-    input[type="number"],
-    select {
-      border-color: rgba(255, 122, 217, 0.30);
-      box-shadow: none;
-    }
-
-    textarea:focus,
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(255, 122, 217, 0.20);
-    }
-
-    /* ==============================
-       回答/摘要/日志：统一粉色边框（默认无柔光）
-       ============================== */
-
-    pre,
-    #ans,
-    #attachmentPreview,
-    #systemInfo,
-    #observabilityEvents,
-    #observabilityLog {
-      border: 2px solid rgba(255, 122, 217, 0.35);
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: none;
-    }
-
-    .meta {
-      border: 2px solid rgba(255, 122, 217, 0.30);
-      background: rgba(255, 240, 250, 0.55);
-      box-shadow: none;
-    }
-
-    .log-panel {
-      border: 2px dashed rgba(255, 122, 217, 0.35);
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: none;
-    }
   </style>
 </head>
 
@@ -719,12 +619,7 @@ permalink: /ai/
       <label for="q">你的问题</label>
       <textarea id="q" placeholder="例如：按结构说明 LangChain 核心能力与落地建议"></textarea>
 
-      
-
-      <div class="ask-bar">
-        <button class="ask-btn" onclick="ask()">提问</button>
-</div>
-<div class="api-input">
+      <div class="api-input">
         <label for="apiInput">API 地址</label>
         <input id="apiInput" type="text" />
         <button class="ghost" onclick="saveApiBase()">保存</button>
@@ -747,13 +642,19 @@ permalink: /ai/
       </div>
 
       <div class="row">
+        <button onclick="ask()">提问</button>
         <label class="toggle"><input id="stream" type="checkbox" checked /> 流式输出</label>
         <label class="toggle"><input id="meta" type="checkbox" /> 显示元信息</label>
         <label class="toggle"><input id="advisor" type="checkbox" /> 架构建议模式</label>
         <label class="toggle"><input id="rag" type="checkbox" /> RAG 资料增强</label>
         <label class="toggle"><input id="enableTools" type="checkbox" /> 工具调用</label>
         <label class="toggle"><input id="enableRouter" type="checkbox" checked /> Router 自动路由</label>
-</div>
+        <button class="ghost" onclick="clearSession()">清空会话</button>
+        <span class="status">
+          <span id="dot" class="dot"></span>
+          <span id="statusText">等待输入</span>
+        </span>
+      </div>
       <div class="action-bar">
         <button class="ghost" onclick="fillAdvisorPrompt()">一键生成升级建议提示词</button>
         <button class="ghost" onclick="fillRagPrompt()">一键 RAG 资料型提问</button>
