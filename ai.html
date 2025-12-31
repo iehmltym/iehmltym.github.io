@@ -384,10 +384,10 @@ permalink: /ai/
 
       <div class="card">
         <label>回答</label>
-      <div class="answer-box" id="answerBox">
-        <pre class="answer" id="ans" aria-live="polite">这里会显示 AI 的回答～</pre>
-        <div class="answer-glow" aria-hidden="true"></div>
-      </div>
+        <div class="answer-box" id="answerBox">
+          <pre class="answer" id="ans" aria-live="polite">这里会显示 AI 的回答～</pre>
+          <div class="answer-glow" aria-hidden="true"></div>
+        </div>
         <div class="row">
           <span class="typing-indicator" id="typing">
             <span class="typing-dot"></span>
@@ -397,6 +397,10 @@ permalink: /ai/
           </span>
           <button id="copyBtn" class="secondary" type="button">复制回答</button>
         </div>
+        <details class="muted" id="debugPanel" style="margin-top: 10px;">
+          <summary>调试信息</summary>
+          <div id="debugInfo">暂无</div>
+        </details>
       </div>
     </section>
 
@@ -420,6 +424,7 @@ permalink: /ai/
     const ans = document.getElementById("ans");
     const typing = document.getElementById("typing");
     const answerBox = document.getElementById("answerBox");
+    const debugInfo = document.getElementById("debugInfo");
     const toast = document.getElementById("toast");
     const themeToggle = document.getElementById("themeToggle");
     const questionInput = document.getElementById("q");
@@ -497,8 +502,37 @@ permalink: /ai/
           throw new Error(`HTTP ${resp.status}: ${text}`);
         }
 
-        const text = await resp.text();
-        setAnswer(text || "(后端没有返回内容)");
+        const contentType = resp.headers.get("content-type") || "(unknown)";
+        debugInfo.textContent = `HTTP ${resp.status} | content-type: ${contentType}`;
+
+        if (!resp.body) {
+          const text = await resp.text();
+          setAnswer(text || "(后端没有返回内容)");
+          setStatus("完成 ✅", false);
+          return;
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let received = "";
+        setStatus("生成中...", true);
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          received += chunk;
+          ans.textContent += chunk;
+        }
+        received += decoder.decode();
+        ans.textContent += decoder.decode();
+
+        if (!received.trim()) {
+          setAnswer("(后端没有返回内容)");
+          debugInfo.textContent += " | body length: 0";
+        } else {
+          debugInfo.textContent += ` | body length: ${received.length}`;
+        }
         setStatus("完成 ✅", false);
       } catch (e) {
         setStatus("失败 ❌", false);
