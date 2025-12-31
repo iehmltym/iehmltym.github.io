@@ -597,7 +597,7 @@ permalink: /ai/
     <div class="hero">
       <div>
         <h1>🌸林志玲今日值班 AI小助手</h1>
-        <p>输入问题，点击提问，获取温柔可爱的回答~</p>
+        <p>输入问题，点击，获取温柔可爱的回答~</p>
         <p class="muted">后端地址：<code id="apiBase"></code></p>
         <div class="hero-tags">
           <span class="tag emphasis">默认温柔模式</span>
@@ -643,6 +643,10 @@ permalink: /ai/
 
       <div class="row">
         <button onclick="ask()">提问</button>
+        <span class="status">
+          <span id="dot" class="dot"></span>
+          <span id="statusText">等待输入</span>
+        </span>
         <label class="toggle"><input id="stream" type="checkbox" checked /> 流式输出</label>
         <label class="toggle"><input id="meta" type="checkbox" /> 显示元信息</label>
         <label class="toggle"><input id="advisor" type="checkbox" /> 架构建议模式</label>
@@ -650,10 +654,7 @@ permalink: /ai/
         <label class="toggle"><input id="enableTools" type="checkbox" /> 工具调用</label>
         <label class="toggle"><input id="enableRouter" type="checkbox" checked /> Router 自动路由</label>
         <button class="ghost" onclick="clearSession()">清空会话</button>
-        <span class="status">
-          <span id="dot" class="dot"></span>
-          <span id="statusText">等待输入</span>
-        </span>
+
       </div>
       <div class="action-bar">
         <button class="ghost" onclick="fillAdvisorPrompt()">一键生成升级建议提示词</button>
