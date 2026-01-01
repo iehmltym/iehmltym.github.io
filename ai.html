@@ -768,7 +768,6 @@ permalink: /ai/
       <div>
         <h1 data-i18n="heroTitle">🌸林志玲 今日当番 AIアシスタント</h1>
         <p data-i18n="heroSubtitle">質問を入力して、クリックすると優しくて可愛い回答が届きます〜</p>
-        <p class="muted"><span data-i18n="heroApiLabel">バックエンド：</span><code id="apiBase"></code></p>
         <div class="hero-tags">
           <span class="tag emphasis" data-i18n="heroTagDefault">デフォルトやさしいモード</span>
           <span class="tag" data-i18n="heroTagArch">アーキテクチャ提案</span>
@@ -1249,7 +1248,10 @@ permalink: /ai/
     if (window.location.hostname === "myagent-mhrq.onrender.com") {
       apiBase = window.location.origin;
     }
-    document.getElementById("apiBase").textContent = apiBase;
+    const apiBaseEl = document.getElementById("apiBase");
+    if (apiBaseEl) {
+      apiBaseEl.textContent = apiBase;
+    }
     document.getElementById("apiInput").value = apiBase;
 
     const sessionInput = document.getElementById("session");
@@ -1350,7 +1352,9 @@ permalink: /ai/
       }
       apiBase = nextBase;
       localStorage.setItem("api_base", apiBase);
-      document.getElementById("apiBase").textContent = apiBase;
+      if (apiBaseEl) {
+        apiBaseEl.textContent = apiBase;
+      }
       loadCommands();
       loadBlueprint();
       loadStats();
