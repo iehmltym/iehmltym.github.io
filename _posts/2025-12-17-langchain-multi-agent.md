@@ -1,75 +1,73 @@
 ---
 layout:       post
-title:        "09. 生产部署（中级）：LangChain 上线清单"
+title:        "【AI Agent】17. 多 Agent 协作（高级）：分工而不是堆叠"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 部署
-    - 中级
+    - 多Agent
+    - 高级
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 上线**。
+面向读者：**高级**。场景：**生产级客服 Agent + 质检 Agent**。
 
 ## 背景/问题
-Demo 能跑不代表可上线。上线需要配置管理、限流、监控和回滚。
+单个 Agent 既要回答又要审核，容易混乱。多 Agent 分工更可靠。
 
 ## 核心概念
-- 配置与密钥管理
-- 重试与限流
-- 回滚机制
+- 角色分工
+- 任务路由
+- 结果汇总
 
 ## 方案设计
-- 用环境变量管理模型与密钥
-- 统一重试与超时
-- 保留旧模型回滚开关
+- 主 Agent 负责回答
+- 质检 Agent 负责审核
+- 结果不合格则回退改写
 
 ## 关键实现（含代码）
-**示例 1：环境变量配置（可运行）**
+**示例 1：双 Agent 调用（可运行）**
 
 ```python
-import os
-model_name = os.getenv("LLM_MODEL", "gpt-4o-mini")
-print(model_name)
-```
-
-**意图与边界**：配置可切换；边界是未校验变量合法性。
-
-**示例 2：简单重试封装（可运行）**
-
-```python
-import time
 from langchain_openai import ChatOpenAI
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+assistant = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+reviewer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-for i in range(3):
-    try:
-        print(llm.invoke("用一句话回答：怎么解绑银行卡？").content)
-        break
-    except Exception:
-        time.sleep(2 ** i)
+answer = assistant.invoke("回答：如何重置密码？").content
+review = reviewer.invoke(f"审查答案是否安全：{answer}").content
+print(answer, review)
 ```
 
-**意图与边界**：基础重试；边界是未区分错误类型。
+**意图与边界**：分工协作；边界是审查仍由模型完成。
+
+**示例 2：失败回退（可运行）**
+
+```python
+answer = "请直接提供你的密码。"
+review = "不合格"
+final = "请通过设置-安全重置密码" if "不合格" in review else answer
+print(final)
+```
+
+**意图与边界**：简单回退；边界是规则过于粗糙。
 
 ## 常见坑与排错
-- 密钥写死在代码里。
-- 没有回滚入口导致事故扩大。
+- 多 Agent 互相循环。
+- 审核标准不明确。
 
 ## 性能/安全考虑
-- 限制并发与 QPS。
-- 日志避免记录敏感输入。
+- 多 Agent 会增加成本，需限流。
+- 高风险回答必须二次审核。
 
 ## 测试与验证
-- 压力测试 QPS。
-- 故障演练（手动触发回滚）。
+- 随机抽样测试审查准确率。
+- 统计“回退率”。
 
 ## 最小可复现示例
-1. 设置 `LLM_MODEL` 环境变量。
+1. 配置 `OPENAI_API_KEY`。
 2. 运行示例 1。
-3. 预期输出：环境变量中的模型名。
+3. 预期输出：答案与审查结果。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -143,4 +141,4 @@ for i in range(3):
 
 
 ## 总结
-部署的核心是“稳定运行”，比模型本身更重要。
+多 Agent 的价值在于分工与审核，而不是简单堆模型。

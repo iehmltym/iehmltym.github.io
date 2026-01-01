@@ -1,74 +1,82 @@
 ---
 layout:       post
-title:        "20. 成本优化与缓存（高级）：把调用成本降下来"
+title:        "【AI Agent】04. 工具调用（初学）：让 Agent 真正动起来"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 成本优化
-    - 高级
+    - 工具调用
+    - 入门
 ---
 
-面向读者：**高级**。场景：**生产级客服 Agent 成本控制**。
+面向读者：**初学**。场景：**客服 Agent 查询订单状态**。
 
 ## 背景/问题
-高频问题重复调用模型会浪费成本。需要缓存与降级策略。
+只生成文本无法完成业务动作，比如“查订单”。需要工具调用与结果回填。
 
 ## 核心概念
-- 结果缓存
-- 热点问题
-- 降级策略
+- Tool 定义
+- 函数参数约束
+- 返回结构化结果
 
 ## 方案设计
-- 对 FAQ 结果做缓存
-- 热点问题直接返回固定答案
-- 高峰期降级到轻量模型
+- 为每个业务动作定义工具
+- 限制工具输入字段
+- 工具输出统一为 JSON
 
 ## 关键实现（含代码）
-**示例 1：简单缓存（可运行）**
+**示例 1：定义工具（可运行）**
 
 ```python
-cache = {}
+from langchain_core.tools import tool
 
-def get_answer(q: str) -> str:
-    if q in cache:
-        return cache[q]
-    answer = "请进入设置-安全重置密码"
-    cache[q] = answer
-    return answer
+@tool
+def get_order_status(order_id: str) -> dict:
+    """查询订单状态。"""
+    return {"order_id": order_id, "status": "已发货"}
 
-print(get_answer("如何重置密码？"))
+print(get_order_status.invoke({"order_id": "A1001"}))
 ```
 
-**意图与边界**：缓存热点问题；边界是内存缓存无过期。
+**意图与边界**：标准化接口；边界是无鉴权逻辑。
 
-**示例 2：降级策略（可运行）**
+**示例 2：工具链组合（可运行）**
 
 ```python
-def choose_model(peak: bool) -> str:
-    return "gpt-4o-mini" if peak else "gpt-4o"
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.tools import tool
 
-print(choose_model(True))
+@tool
+def get_order_status(order_id: str) -> dict:
+    return {"order_id": order_id, "status": "已发货"}
+
+prompt = PromptTemplate.from_template("请根据工具结果回答用户：{order_id}")
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+
+status = get_order_status.invoke({"order_id": "A1001"})
+answer = (prompt | llm).invoke({"order_id": status})
+print(answer.content)
 ```
 
-**意图与边界**：高峰期降级；边界是需要业务指标驱动。
+**意图与边界**：把工具结果回填；边界是未做重试和超时。
 
 ## 常见坑与排错
-- 缓存不设过期导致答案过时。
-- 降级策略影响关键场景质量。
+- 工具参数名与模型传参不一致。
+- 工具返回字段过多导致模型迷失重点。
 
 ## 性能/安全考虑
-- 缓存需设置 TTL。
-- 对敏感问题不缓存。
+- 对工具调用做速率限制。
+- 订单查询必须加鉴权。
 
 ## 测试与验证
-- 统计缓存命中率。
-- 监控成本与响应时间。
+- 模拟订单不存在时的返回。
+- 记录工具错误并回退到人工客服。
 
 ## 最小可复现示例
 1. 运行示例 1。
-2. 预期输出：固定答案字符串。
+2. 预期输出：`{"order_id": "A1001", "status": "已发货"}`。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -142,4 +150,4 @@ print(choose_model(True))
 
 
 ## 总结
-缓存与降级让生产 Agent 的成本可控，但要避免牺牲关键质量。
+工具调用是生产 Agent 的“执行力”，接口清晰比模型聪明更重要。

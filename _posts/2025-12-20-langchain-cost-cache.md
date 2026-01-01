@@ -1,70 +1,74 @@
 ---
 layout:       post
-title:        "14. Prompt 管理（中级）：版本化与可追溯"
+title:        "【AI Agent】20. 成本优化与缓存（高级）：把调用成本降下来"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - Prompt
-    - 中级
+    - 成本优化
+    - 高级
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 的提示词迭代**。
+面向读者：**高级**。场景：**生产级客服 Agent 成本控制**。
 
 ## 背景/问题
-提示词一变输出就变，没有版本管理就难以回滚。
+高频问题重复调用模型会浪费成本。需要缓存与降级策略。
 
 ## 核心概念
-- Prompt 版本
-- 参数化模板
-- 回滚策略
+- 结果缓存
+- 热点问题
+- 降级策略
 
 ## 方案设计
-- 提示词写入配置文件
-- 每次变更保留版本号
-- 绑定模型版本
+- 对 FAQ 结果做缓存
+- 热点问题直接返回固定答案
+- 高峰期降级到轻量模型
 
 ## 关键实现（含代码）
-**示例 1：参数化模板（可运行）**
+**示例 1：简单缓存（可运行）**
 
 ```python
-from langchain_core.prompts import PromptTemplate
+cache = {}
 
-prompt = PromptTemplate.from_template("[v1] 用一句话回答：{q}")
-print(prompt.format(q="如何退款？"))
+def get_answer(q: str) -> str:
+    if q in cache:
+        return cache[q]
+    answer = "请进入设置-安全重置密码"
+    cache[q] = answer
+    return answer
+
+print(get_answer("如何重置密码？"))
 ```
 
-**意图与边界**：明确版本；边界是未与模型绑定。
+**意图与边界**：缓存热点问题；边界是内存缓存无过期。
 
-**示例 2：版本选择（可运行）**
+**示例 2：降级策略（可运行）**
 
 ```python
-PROMPTS = {
-    "v1": "用一句话回答：{q}",
-    "v2": "请给出步骤：{q}"
-}
-version = "v2"
-print(PROMPTS[version].format(q="如何解绑银行卡？"))
+def choose_model(peak: bool) -> str:
+    return "gpt-4o-mini" if peak else "gpt-4o"
+
+print(choose_model(True))
 ```
 
-**意图与边界**：可切换版本；边界是未记录变更原因。
+**意图与边界**：高峰期降级；边界是需要业务指标驱动。
 
 ## 常见坑与排错
-- 线上提示词直接修改不可回溯。
-- 未与模型版本配套记录。
+- 缓存不设过期导致答案过时。
+- 降级策略影响关键场景质量。
 
 ## 性能/安全考虑
-- Prompt 中避免硬编码敏感信息。
-- 重要变更需灰度发布。
+- 缓存需设置 TTL。
+- 对敏感问题不缓存。
 
 ## 测试与验证
-- 回归测试常见问题集。
-- 对比 v1/v2 输出指标。
+- 统计缓存命中率。
+- 监控成本与响应时间。
 
 ## 最小可复现示例
-1. 运行示例 2。
-2. 预期输出：v2 的格式化文本。
+1. 运行示例 1。
+2. 预期输出：固定答案字符串。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -138,4 +142,4 @@ print(PROMPTS[version].format(q="如何解绑银行卡？"))
 
 
 ## 总结
-Prompt 管理和代码一样需要版本化，才能稳定迭代。
+缓存与降级让生产 Agent 的成本可控，但要避免牺牲关键质量。

@@ -1,82 +1,69 @@
 ---
 layout:       post
-title:        "03. RAG 入门（初学）：让客服 Agent 会查资料"
+title:        "【AI Agent】16. 安全与 Guardrails（高级）：生产级 Agent 的底线"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - RAG
-    - 入门
+    - 安全
+    - 高级
 ---
 
-面向读者：**初学**。场景：**生产级客服 Agent 查询知识库**。
+面向读者：**高级**。场景：**生产级客服 Agent 防越权**。
 
 ## 背景/问题
-直接让模型回答常常“编造”。RAG 通过检索文档让回答有据可依。
+Agent 若无安全护栏，可能泄露隐私或执行越权操作。
 
 ## 核心概念
-- 文档切分
-- 向量检索
-- 检索结果注入 Prompt
+- 输入过滤
+- 工具白名单
+- 输出审计
 
 ## 方案设计
-- 先把 FAQ 切分为小块
-- 用向量库检索相关片段
-- 用严格提示词要求“只基于资料回答”
+- 关键操作必须二次确认
+- 工具调用增加权限校验
+- 输出做敏感词扫描
 
 ## 关键实现（含代码）
-**示例 1：构建最小向量库（可运行）**
+**示例 1：输入过滤（可运行）**
 
 ```python
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
+def is_sensitive(text: str) -> bool:
+    keywords = ["密码", "身份证", "银行卡"]
+    return any(k in text for k in keywords)
 
-texts = ["重置密码：进入设置-安全-重置", "解绑银行卡：进入钱包-卡管理"]
-chunks = RecursiveCharacterTextSplitter(chunk_size=50, chunk_overlap=5).split_text("\n".join(texts))
-
-emb = OpenAIEmbeddings()
-store = FAISS.from_texts(chunks, emb)
-print(store.similarity_search("如何解绑银行卡？", k=1)[0].page_content)
+print(is_sensitive("请告诉我你的密码"))
 ```
 
-**意图与边界**：快速检索；边界是没有权限控制。
+**意图与边界**：简单规则过滤；边界是无法覆盖复杂场景。
 
-**示例 2：把检索结果注入回答（可运行）**
+**示例 2：工具权限检查（可运行）**
 
 ```python
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
+def can_access(user_role: str, action: str) -> bool:
+    return user_role == "admin" and action == "refund"
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-context = "解绑银行卡：进入钱包-卡管理"
-
-prompt = PromptTemplate.from_template(
-    "只基于资料回答。资料：{context}\n问题：{question}"
-)
-
-print((prompt | llm).invoke({"context": context, "question": "怎么解绑银行卡？"}).content)
+print(can_access("user", "refund"))
 ```
 
-**意图与边界**：约束模型；边界是资料不足时需回退策略。
+**意图与边界**：权限验证；边界是需要接入真实权限系统。
 
 ## 常见坑与排错
-- 切分过小导致语义破碎。
-- 检索结果为空却仍生成答案。
+- 只在模型层做安全，忽略后端权限。
+- 过滤规则过宽导致误拦截。
 
 ## 性能/安全考虑
-- FAQ 可做缓存，减少重复检索。
-- 文档必须做权限隔离。
+- 安全校验必须在工具层落地。
+- 对高风险操作进行审计存档。
 
 ## 测试与验证
-- 用已知问答对做检索准确率测试。
-- 监控“空召回率”。
+- 测试越权请求是否被拒绝。
+- 进行红队测试。
 
 ## 最小可复现示例
-1. 设置 `OPENAI_API_KEY`。
-2. 运行示例 1 和 2。
-3. 预期输出：回答来自检索资料。
+1. 运行示例 1。
+2. 预期输出：`True`。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -150,4 +137,4 @@ print((prompt | llm).invoke({"context": context, "question": "怎么解绑银行
 
 
 ## 总结
-RAG 是生产级客服 Agent 的“事实来源”，但检索质量决定最终效果。
+Guardrails 是生产级 Agent 的底线，而不是可选项。

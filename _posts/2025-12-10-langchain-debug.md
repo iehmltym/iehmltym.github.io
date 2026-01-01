@@ -1,6 +1,6 @@
 ---
 layout:       post
-title:        "10. 调试与可观测性（中级）：把问题定位到每一步"
+title:        "【AI Agent】10. 调试与可观测性（中级）：把问题定位到每一步"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true

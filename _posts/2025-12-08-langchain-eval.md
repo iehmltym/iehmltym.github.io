@@ -1,72 +1,73 @@
 ---
 layout:       post
-title:        "19. 测试集与自动评估（高级）：把质量纳入流水线"
+title:        "【AI Agent】08. 评估与监控（中级）：让输出可量化"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 测试
-    - 高级
+    - 评估
+    - 中级
 ---
 
-面向读者：**高级**。场景：**生产级客服 Agent 持续迭代**。
+面向读者：**中级**。场景：**生产级客服 Agent 的质量评估**。
 
 ## 背景/问题
-没有自动评估，升级模型会带来不可控退化。
+没有评估就无法改进。需要离线评估 + 在线监控体系。
 
 ## 核心概念
-- 固定评测集
-- 自动评分
-- 回归门槛
+- 评估样本集
+- 指标：相关性、忠实度
+- 日志追踪
 
 ## 方案设计
-- 建立核心问题集
-- 用脚本批量运行
-- 设定最低通过率
+- 建立固定问答集
+- 记录检索内容与最终输出
+- 定期抽样人工打分
 
 ## 关键实现（含代码）
-**示例 1：评测集模板（可运行）**
-
-```python
-cases = [
-    {"q": "如何退款？", "expected": "1-3 个工作日"},
-    {"q": "怎么解绑银行卡？", "expected": "钱包-卡管理"},
-]
-print(len(cases))
-```
-
-**意图与边界**：评测集结构；边界是期望答案较粗糙。
-
-**示例 2：批量运行（可运行）**
+**示例 1：简单评估打分（可运行）**
 
 ```python
 from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-for case in [{"q": "如何退款？"}, {"q": "怎么解绑银行卡？"}]:
-    ans = llm.invoke(f"简短回答：{case['q']}").content
-    print({"q": case["q"], "ans": ans})
+question = "如何重置密码？"
+answer = llm.invoke(f"用一句话回答：{question}").content
+print({"question": question, "answer": answer})
 ```
 
-**意图与边界**：批量评测；边界是没有自动打分。
+**意图与边界**：采样输出；边界是未计算指标。
+
+**示例 2：离线抽样记录（可运行）**
+
+```python
+import json
+samples = [
+    {"question": "退款多久到账？", "expected": "1-3 个工作日"},
+]
+with open("eval_samples.json", "w", encoding="utf-8") as f:
+    json.dump(samples, f, ensure_ascii=False, indent=2)
+print("saved")
+```
+
+**意图与边界**：构建样本集；边界是无自动评分。
 
 ## 常见坑与排错
-- 评测集规模过小导致误判。
-- 期望答案太死板，忽略同义表达。
+- 只看“好不好”，不记录上下文。
+- 忽略“模型版本变化”。
 
 ## 性能/安全考虑
-- 评测任务离线跑。
-- 评测日志脱敏。
+- 评估日志需脱敏。
+- 评估任务尽量离线进行。
 
 ## 测试与验证
-- 设定最低通过率（如 80%）。
-- 新模型必须通过门槛。
+- 计算抽样准确率。
+- 每次模型升级后回归。
 
 ## 最小可复现示例
-1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 2。
-3. 预期输出：每个问题的简短回答。
+1. 运行示例 2。
+2. 预期输出：`eval_samples.json` 文件。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -140,4 +141,4 @@ for case in [{"q": "如何退款？"}, {"q": "怎么解绑银行卡？"}]:
 
 
 ## 总结
-自动评估让 Agent 迭代可控，是生产级必备流程。
+评估让生产 Agent 从“感觉好”走向“可量化改进”。

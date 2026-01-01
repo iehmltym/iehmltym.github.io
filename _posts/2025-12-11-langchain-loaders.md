@@ -1,84 +1,72 @@
 ---
 layout:       post
-title:        "15. 结构化输出与校验（中级）：让结果可落地"
+title:        "【AI Agent】11. 文档加载与清洗（初学）：知识库的第一公里"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 结构化输出
-    - 中级
+    - 文档加载
+    - 初学
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 自动生成工单字段**。
+面向读者：**初学**。场景：**生产级客服 Agent 构建知识库**。
 
 ## 背景/问题
-文本答案难以直接落库。需要结构化输出并做校验。
+RAG 的质量首先取决于文档质量。文档加载与清洗是最容易被忽视的步骤。
 
 ## 核心概念
-- Pydantic Schema
-- JSON Output Parser
-- 失败重试
+- Document Loader
+- 元数据
+- 清洗与去重
 
 ## 方案设计
-- 定义严格字段
-- 输出必须为 JSON
-- 校验失败时重试
+- 用 Loader 统一读取多种格式
+- 补充 `source` 等元数据
+- 清洗重复或过时内容
 
 ## 关键实现（含代码）
-**示例 1：定义 Schema（可运行）**
+**示例 1：文本加载（可运行）**
 
 ```python
-from pydantic import BaseModel
+from langchain_community.document_loaders import TextLoader
 
-class Ticket(BaseModel):
-    title: str
-    priority: str
+with open("kb.txt", "w", encoding="utf-8") as f:
+    f.write("解绑银行卡：进入钱包-卡管理")
 
-print(Ticket(title="无法登录", priority="high"))
+docs = TextLoader("kb.txt").load()
+print(docs[0].page_content)
 ```
 
-**意图与边界**：约束字段；边界是未验证枚举值。
+**意图与边界**：读取文本文件；边界是无格式解析。
 
-**示例 2：输出解析（可运行）**
+**示例 2：补充元数据（可运行）**
 
 ```python
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
-from pydantic import BaseModel
+from langchain_core.documents import Document
 
-class Ticket(BaseModel):
-    title: str
-    priority: str
-
-parser = JsonOutputParser(pydantic_object=Ticket)
-prompt = PromptTemplate.from_template(
-    "输出JSON：{format_instructions}\n内容：{text}"
-).partial(format_instructions=parser.get_format_instructions())
-
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-print((prompt | llm | parser).invoke({"text": "用户无法登录，需要高优先级处理"}))
+doc = Document(page_content="重置密码流程", metadata={"source": "faq_v1"})
+print(doc.metadata)
 ```
 
-**意图与边界**：结构化输出；边界是模型可能格式错误。
+**意图与边界**：记录来源；边界是元数据字段需要统一规范。
 
 ## 常见坑与排错
-- Schema 过于复杂导致生成失败。
-- 输出字段名与后端不一致。
+- 文档混入无效内容导致检索噪声。
+- 元数据缺失导致无法溯源。
 
 ## 性能/安全考虑
-- 对失败输出做重试与降级。
-- 记录解析失败样本以优化提示词。
+- 加载大文件时要分批处理。
+- 对外部文档做安全扫描。
 
 ## 测试与验证
-- 用固定输入验证 JSON 合法性。
-- 统计解析失败率。
+- 抽样检查文档内容是否完整。
+- 统计重复率。
 
 ## 最小可复现示例
-1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 2。
-3. 预期输出：含 `title` 与 `priority` 的对象。
+1. 创建 `kb.txt` 并写入一行内容。
+2. 运行示例 1。
+3. 预期输出：文档文本。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -152,4 +140,4 @@ print((prompt | llm | parser).invoke({"text": "用户无法登录，需要高优
 
 
 ## 总结
-结构化输出是“可落地”的关键一步。
+知识库质量决定 RAG 上限，加载与清洗是基础工程。

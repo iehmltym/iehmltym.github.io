@@ -1,82 +1,84 @@
 ---
 layout:       post
-title:        "04. 工具调用（初学）：让 Agent 真正动起来"
+title:        "【AI Agent】18. 流式与异步（高级）：降低延迟与提升吞吐"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 工具调用
-    - 入门
+    - 流式
+    - 高级
 ---
 
-面向读者：**初学**。场景：**客服 Agent 查询订单状态**。
+面向读者：**高级**。场景：**生产级客服 Agent 并发服务**。
 
 ## 背景/问题
-只生成文本无法完成业务动作，比如“查订单”。需要工具调用与结果回填。
+实时对话需要低延迟，但同步调用会阻塞。需要流式和异步调用。
 
 ## 核心概念
-- Tool 定义
-- 函数参数约束
-- 返回结构化结果
+- Streaming
+- Async invoke
+- 并发控制
 
 ## 方案设计
-- 为每个业务动作定义工具
-- 限制工具输入字段
-- 工具输出统一为 JSON
+- 对用户采用流式输出
+- 内部任务用异步批处理
 
 ## 关键实现（含代码）
-**示例 1：定义工具（可运行）**
+**示例 1：异步调用（可运行）**
 
 ```python
-from langchain_core.tools import tool
-
-@tool
-def get_order_status(order_id: str) -> dict:
-    """查询订单状态。"""
-    return {"order_id": order_id, "status": "已发货"}
-
-print(get_order_status.invoke({"order_id": "A1001"}))
-```
-
-**意图与边界**：标准化接口；边界是无鉴权逻辑。
-
-**示例 2：工具链组合（可运行）**
-
-```python
+import asyncio
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
-from langchain_core.tools import tool
 
-@tool
-def get_order_status(order_id: str) -> dict:
-    return {"order_id": order_id, "status": "已发货"}
+async def main():
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    resp = await llm.ainvoke("用一句话回答：如何退款？")
+    print(resp.content)
 
-prompt = PromptTemplate.from_template("请根据工具结果回答用户：{order_id}")
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-
-status = get_order_status.invoke({"order_id": "A1001"})
-answer = (prompt | llm).invoke({"order_id": status})
-print(answer.content)
+asyncio.run(main())
 ```
 
-**意图与边界**：把工具结果回填；边界是未做重试和超时。
+**意图与边界**：异步调用模型；边界是需要事件循环。
+
+**示例 2：并发批处理（可运行）**
+
+```python
+import asyncio
+from langchain_openai import ChatOpenAI
+
+async def ask(q):
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    return (await llm.ainvoke(q)).content
+
+async def main():
+    results = await asyncio.gather(
+        ask("退款多久到账？"),
+        ask("怎么解绑银行卡？")
+    )
+    print(results)
+
+asyncio.run(main())
+```
+
+**意图与边界**：并发处理；边界是并发过高会触发限流。
 
 ## 常见坑与排错
-- 工具参数名与模型传参不一致。
-- 工具返回字段过多导致模型迷失重点。
+- 未限制并发导致速率限制。
+- 异步异常未捕获导致任务中断。
 
 ## 性能/安全考虑
-- 对工具调用做速率限制。
-- 订单查询必须加鉴权。
+- 设置并发上限。
+- 对流式输出进行内容过滤。
 
 ## 测试与验证
-- 模拟订单不存在时的返回。
-- 记录工具错误并回退到人工客服。
+- 压测并发下的响应时间。
+- 模拟限流错误场景。
 
 ## 最小可复现示例
-1. 运行示例 1。
-2. 预期输出：`{"order_id": "A1001", "status": "已发货"}`。
+1. 配置 `OPENAI_API_KEY`。
+2. 运行示例 1。
+3. 预期输出：一句话回答。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -150,4 +152,4 @@ print(answer.content)
 
 
 ## 总结
-工具调用是生产 Agent 的“执行力”，接口清晰比模型聪明更重要。
+异步与流式是生产级 Agent 低延迟的关键手段。

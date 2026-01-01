@@ -1,73 +1,72 @@
 ---
 layout:       post
-title:        "13. Retriever 与重排（中级）：把“能找到”变成“找得准”"
+title:        "【AI Agent】19. 测试集与自动评估（高级）：把质量纳入流水线"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - Retriever
-    - 中级
+    - 测试
+    - 高级
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 精准检索**。
+面向读者：**高级**。场景：**生产级客服 Agent 持续迭代**。
 
 ## 背景/问题
-检索常常返回“相关但不够准”的片段，需要二次排序。
+没有自动评估，升级模型会带来不可控退化。
 
 ## 核心概念
-- Retriever
-- Top-k
-- Rerank
+- 固定评测集
+- 自动评分
+- 回归门槛
 
 ## 方案设计
-- 先召回 Top-k
-- 再用轻量模型做重排
+- 建立核心问题集
+- 用脚本批量运行
+- 设定最低通过率
 
 ## 关键实现（含代码）
-**示例 1：基本 Retriever（可运行）**
+**示例 1：评测集模板（可运行）**
 
 ```python
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
-
-store = FAISS.from_texts(["退款 1-3 天", "解绑银行卡"], OpenAIEmbeddings())
-retriever = store.as_retriever(search_kwargs={"k": 2})
-print([d.page_content for d in retriever.get_relevant_documents("退款多久到账？")])
+cases = [
+    {"q": "如何退款？", "expected": "1-3 个工作日"},
+    {"q": "怎么解绑银行卡？", "expected": "钱包-卡管理"},
+]
+print(len(cases))
 ```
 
-**意图与边界**：简单召回；边界是排序粗糙。
+**意图与边界**：评测集结构；边界是期望答案较粗糙。
 
-**示例 2：轻量重排（可运行）**
+**示例 2：批量运行（可运行）**
 
 ```python
 from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-query = "退款多久到账？"
-choices = ["退款 1-3 天", "解绑银行卡"]
-ranked = llm.invoke(f"按相关性排序：{query} 选项：{choices}").content
-print(ranked)
+for case in [{"q": "如何退款？"}, {"q": "怎么解绑银行卡？"}]:
+    ans = llm.invoke(f"简短回答：{case['q']}").content
+    print({"q": case["q"], "ans": ans})
 ```
 
-**意图与边界**：文本重排；边界是非结构化输出。
+**意图与边界**：批量评测；边界是没有自动打分。
 
 ## 常见坑与排错
-- k 值过小导致召回不足。
-- 重排耗时过高。
+- 评测集规模过小导致误判。
+- 期望答案太死板，忽略同义表达。
 
 ## 性能/安全考虑
-- 对重排模型做缓存。
-- 对高频问题使用固定答案。
+- 评测任务离线跑。
+- 评测日志脱敏。
 
 ## 测试与验证
-- 评估 Top-1 命中率。
-- 对比重排前后准确度。
+- 设定最低通过率（如 80%）。
+- 新模型必须通过门槛。
 
 ## 最小可复现示例
 1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 1。
-3. 预期输出：包含“退款 1-3 天”。
+2. 运行示例 2。
+3. 预期输出：每个问题的简短回答。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -141,4 +140,4 @@ print(ranked)
 
 
 ## 总结
-Retrieval 解决“找得到”，Rerank 解决“找得准”。
+自动评估让 Agent 迭代可控，是生产级必备流程。
