@@ -1,93 +1,70 @@
 ---
 layout:       post
-title:        "01. LangChain 全景入门（初学）：生产级 Agent 的第一步"
+title:        "【AI Agent】14. Prompt 管理（中级）：版本化与可追溯"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 入门
-    - Agent
-    - 生产实践
+    - Prompt
+    - 中级
 ---
 
-面向读者：**初学**。场景：**生产级客服 Agent**（多轮对话、工具调用、可审计）。
+面向读者：**中级**。场景：**生产级客服 Agent 的提示词迭代**。
 
 ## 背景/问题
-把大模型直接接到客服系统，常见问题是：回复不稳定、缺乏工具调用、难以审计。需要一个可组合、可测试的框架来组织提示词、工具、检索和日志。
+提示词一变输出就变，没有版本管理就难以回滚。
 
 ## 核心概念
-- **PromptTemplate**：参数化提示词。
-- **LCEL**：用管道组合流程。
-- **工具调用**：让 Agent 执行“动作”。
-- **输出解析**：保证结构化结果。
+- Prompt 版本
+- 参数化模板
+- 回滚策略
 
 ## 方案设计
-- 用 PromptTemplate 规范输入输出。
-- 用 LCEL 把“问题 → 模型 → 结构化输出”串起来。
-- 先不引入复杂 Agent，保证最小链路稳定。
+- 提示词写入配置文件
+- 每次变更保留版本号
+- 绑定模型版本
 
 ## 关键实现（含代码）
-**示例 1：最小链路（可运行）**
+**示例 1：参数化模板（可运行）**
 
 ```python
 from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 
-prompt = PromptTemplate.from_template(
-    "你是客服助手，请用三句话回答：{question}"
-)
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-chain = prompt | llm
-
-result = chain.invoke({"question": "如何重置密码？"})
-print(result.content)
+prompt = PromptTemplate.from_template("[v1] 用一句话回答：{q}")
+print(prompt.format(q="如何退款？"))
 ```
 
-**意图与边界**：快速验证模型可用性；边界是没有工具调用与审计。
+**意图与边界**：明确版本；边界是未与模型绑定。
 
-**示例 2：结构化输出（可运行）**
+**示例 2：版本选择（可运行）**
 
 ```python
-from langchain_core.output_parsers import JsonOutputParser
-from pydantic import BaseModel, Field
-from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
-
-class Answer(BaseModel):
-    summary: str = Field(description="一句话总结")
-    steps: list[str] = Field(description="操作步骤")
-
-parser = JsonOutputParser(pydantic_object=Answer)
-
-prompt = PromptTemplate.from_template(
-    "请输出JSON，格式如下：{format_instructions}\n问题：{question}"
-).partial(format_instructions=parser.get_format_instructions())
-
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-chain = prompt | llm | parser
-
-print(chain.invoke({"question": "如何解绑银行卡？"}))
+PROMPTS = {
+    "v1": "用一句话回答：{q}",
+    "v2": "请给出步骤：{q}"
+}
+version = "v2"
+print(PROMPTS[version].format(q="如何解绑银行卡？"))
 ```
 
-**意图与边界**：确保可解析；边界是模型可能输出非法 JSON，需要重试。
+**意图与边界**：可切换版本；边界是未记录变更原因。
 
 ## 常见坑与排错
-- Prompt 模板里参数名不一致导致 KeyError。
-- 模型输出 JSON 不规范，需要加重试或修复器。
+- 线上提示词直接修改不可回溯。
+- 未与模型版本配套记录。
 
 ## 性能/安全考虑
-- 生产环境建议设置 **temperature ≤ 0.3**。
-- 日志中避免存储用户敏感信息。
+- Prompt 中避免硬编码敏感信息。
+- 重要变更需灰度发布。
 
 ## 测试与验证
-- 单元测试：PromptTemplate 是否格式化成功。
-- 回归测试：同问题多次运行输出一致性。
+- 回归测试常见问题集。
+- 对比 v1/v2 输出指标。
 
 ## 最小可复现示例
-1. 设置环境变量 `OPENAI_API_KEY`。
-2. 运行示例 1。
-3. 预期输出：三句话回答“如何重置密码”。
+1. 运行示例 2。
+2. 预期输出：v2 的格式化文本。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -161,4 +138,4 @@ print(chain.invoke({"question": "如何解绑银行卡？"}))
 
 
 ## 总结
-先搭建最小链路，确认可控输出，再逐步加入工具调用与检索，这是生产级 Agent 的安全起点。
+Prompt 管理和代码一样需要版本化，才能稳定迭代。

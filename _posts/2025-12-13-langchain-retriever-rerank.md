@@ -1,69 +1,73 @@
 ---
 layout:       post
-title:        "16. 安全与 Guardrails（高级）：生产级 Agent 的底线"
+title:        "【AI Agent】13. Retriever 与重排（中级）：把“能找到”变成“找得准”"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 安全
-    - 高级
+    - Retriever
+    - 中级
 ---
 
-面向读者：**高级**。场景：**生产级客服 Agent 防越权**。
+面向读者：**中级**。场景：**生产级客服 Agent 精准检索**。
 
 ## 背景/问题
-Agent 若无安全护栏，可能泄露隐私或执行越权操作。
+检索常常返回“相关但不够准”的片段，需要二次排序。
 
 ## 核心概念
-- 输入过滤
-- 工具白名单
-- 输出审计
+- Retriever
+- Top-k
+- Rerank
 
 ## 方案设计
-- 关键操作必须二次确认
-- 工具调用增加权限校验
-- 输出做敏感词扫描
+- 先召回 Top-k
+- 再用轻量模型做重排
 
 ## 关键实现（含代码）
-**示例 1：输入过滤（可运行）**
+**示例 1：基本 Retriever（可运行）**
 
 ```python
-def is_sensitive(text: str) -> bool:
-    keywords = ["密码", "身份证", "银行卡"]
-    return any(k in text for k in keywords)
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
 
-print(is_sensitive("请告诉我你的密码"))
+store = FAISS.from_texts(["退款 1-3 天", "解绑银行卡"], OpenAIEmbeddings())
+retriever = store.as_retriever(search_kwargs={"k": 2})
+print([d.page_content for d in retriever.get_relevant_documents("退款多久到账？")])
 ```
 
-**意图与边界**：简单规则过滤；边界是无法覆盖复杂场景。
+**意图与边界**：简单召回；边界是排序粗糙。
 
-**示例 2：工具权限检查（可运行）**
+**示例 2：轻量重排（可运行）**
 
 ```python
-def can_access(user_role: str, action: str) -> bool:
-    return user_role == "admin" and action == "refund"
+from langchain_openai import ChatOpenAI
 
-print(can_access("user", "refund"))
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+query = "退款多久到账？"
+choices = ["退款 1-3 天", "解绑银行卡"]
+ranked = llm.invoke(f"按相关性排序：{query} 选项：{choices}").content
+print(ranked)
 ```
 
-**意图与边界**：权限验证；边界是需要接入真实权限系统。
+**意图与边界**：文本重排；边界是非结构化输出。
 
 ## 常见坑与排错
-- 只在模型层做安全，忽略后端权限。
-- 过滤规则过宽导致误拦截。
+- k 值过小导致召回不足。
+- 重排耗时过高。
 
 ## 性能/安全考虑
-- 安全校验必须在工具层落地。
-- 对高风险操作进行审计存档。
+- 对重排模型做缓存。
+- 对高频问题使用固定答案。
 
 ## 测试与验证
-- 测试越权请求是否被拒绝。
-- 进行红队测试。
+- 评估 Top-1 命中率。
+- 对比重排前后准确度。
 
 ## 最小可复现示例
-1. 运行示例 1。
-2. 预期输出：`True`。
+1. 配置 `OPENAI_API_KEY`。
+2. 运行示例 1。
+3. 预期输出：包含“退款 1-3 天”。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -137,4 +141,4 @@ print(can_access("user", "refund"))
 
 
 ## 总结
-Guardrails 是生产级 Agent 的底线，而不是可选项。
+Retrieval 解决“找得到”，Rerank 解决“找得准”。

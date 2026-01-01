@@ -1,70 +1,82 @@
 ---
 layout:       post
-title:        "12. 向量库与索引（中级）：检索的效率基石"
+title:        "【AI Agent】03. RAG 入门（初学）：让客服 Agent 会查资料"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 向量库
-    - 中级
+    - RAG
+    - 入门
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 知识库检索**。
+面向读者：**初学**。场景：**生产级客服 Agent 查询知识库**。
 
 ## 背景/问题
-文档量大时，检索速度与准确性很关键。需要合理选择向量库与索引策略。
+直接让模型回答常常“编造”。RAG 通过检索文档让回答有据可依。
 
 ## 核心概念
-- 向量嵌入
-- 近似最近邻索引
-- 相似度搜索
+- 文档切分
+- 向量检索
+- 检索结果注入 Prompt
 
 ## 方案设计
-- 小规模可用 FAISS
-- 大规模用外部向量库
-- 建立定期重建索引策略
+- 先把 FAQ 切分为小块
+- 用向量库检索相关片段
+- 用严格提示词要求“只基于资料回答”
 
 ## 关键实现（含代码）
-**示例 1：FAISS 索引（可运行）**
+**示例 1：构建最小向量库（可运行）**
 
 ```python
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-texts = ["退货流程", "解绑银行卡", "重置密码"]
-store = FAISS.from_texts(texts, OpenAIEmbeddings())
-print(store.similarity_search("怎么退货？", k=1)[0].page_content)
+texts = ["重置密码：进入设置-安全-重置", "解绑银行卡：进入钱包-卡管理"]
+chunks = RecursiveCharacterTextSplitter(chunk_size=50, chunk_overlap=5).split_text("\n".join(texts))
+
+emb = OpenAIEmbeddings()
+store = FAISS.from_texts(chunks, emb)
+print(store.similarity_search("如何解绑银行卡？", k=1)[0].page_content)
 ```
 
-**意图与边界**：快速建立索引；边界是内存限制。
+**意图与边界**：快速检索；边界是没有权限控制。
 
-**示例 2：相似度阈值过滤（可运行）**
+**示例 2：把检索结果注入回答（可运行）**
 
 ```python
-docs = store.similarity_search_with_score("退货多久到账？", k=2)
-filtered = [d for d, score in docs if score < 0.5]
-print(len(filtered))
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+context = "解绑银行卡：进入钱包-卡管理"
+
+prompt = PromptTemplate.from_template(
+    "只基于资料回答。资料：{context}\n问题：{question}"
+)
+
+print((prompt | llm).invoke({"context": context, "question": "怎么解绑银行卡？"}).content)
 ```
 
-**意图与边界**：过滤低相关；边界是阈值需调优。
+**意图与边界**：约束模型；边界是资料不足时需回退策略。
 
 ## 常见坑与排错
-- 嵌入模型变更导致索引失效。
-- 未设置阈值导致返回噪声。
+- 切分过小导致语义破碎。
+- 检索结果为空却仍生成答案。
 
 ## 性能/安全考虑
-- 大规模向量库要做分片与备份。
-- 控制索引更新频率。
+- FAQ 可做缓存，减少重复检索。
+- 文档必须做权限隔离。
 
 ## 测试与验证
-- 用基准问答集评估召回率。
-- 监控检索耗时。
+- 用已知问答对做检索准确率测试。
+- 监控“空召回率”。
 
 ## 最小可复现示例
-1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 1。
-3. 预期输出：包含“退货流程”的文本。
+1. 设置 `OPENAI_API_KEY`。
+2. 运行示例 1 和 2。
+3. 预期输出：回答来自检索资料。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -138,4 +150,4 @@ print(len(filtered))
 
 
 ## 总结
-向量库是 RAG 的引擎，索引策略决定检索效率与质量。
+RAG 是生产级客服 Agent 的“事实来源”，但检索质量决定最终效果。

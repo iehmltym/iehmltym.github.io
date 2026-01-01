@@ -1,72 +1,75 @@
 ---
 layout:       post
-title:        "11. 文档加载与清洗（初学）：知识库的第一公里"
+title:        "【AI Agent】09. 生产部署（中级）：LangChain 上线清单"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 文档加载
-    - 初学
+    - 部署
+    - 中级
 ---
 
-面向读者：**初学**。场景：**生产级客服 Agent 构建知识库**。
+面向读者：**中级**。场景：**生产级客服 Agent 上线**。
 
 ## 背景/问题
-RAG 的质量首先取决于文档质量。文档加载与清洗是最容易被忽视的步骤。
+Demo 能跑不代表可上线。上线需要配置管理、限流、监控和回滚。
 
 ## 核心概念
-- Document Loader
-- 元数据
-- 清洗与去重
+- 配置与密钥管理
+- 重试与限流
+- 回滚机制
 
 ## 方案设计
-- 用 Loader 统一读取多种格式
-- 补充 `source` 等元数据
-- 清洗重复或过时内容
+- 用环境变量管理模型与密钥
+- 统一重试与超时
+- 保留旧模型回滚开关
 
 ## 关键实现（含代码）
-**示例 1：文本加载（可运行）**
+**示例 1：环境变量配置（可运行）**
 
 ```python
-from langchain_community.document_loaders import TextLoader
-
-with open("kb.txt", "w", encoding="utf-8") as f:
-    f.write("解绑银行卡：进入钱包-卡管理")
-
-docs = TextLoader("kb.txt").load()
-print(docs[0].page_content)
+import os
+model_name = os.getenv("LLM_MODEL", "gpt-4o-mini")
+print(model_name)
 ```
 
-**意图与边界**：读取文本文件；边界是无格式解析。
+**意图与边界**：配置可切换；边界是未校验变量合法性。
 
-**示例 2：补充元数据（可运行）**
+**示例 2：简单重试封装（可运行）**
 
 ```python
-from langchain_core.documents import Document
+import time
+from langchain_openai import ChatOpenAI
 
-doc = Document(page_content="重置密码流程", metadata={"source": "faq_v1"})
-print(doc.metadata)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+
+for i in range(3):
+    try:
+        print(llm.invoke("用一句话回答：怎么解绑银行卡？").content)
+        break
+    except Exception:
+        time.sleep(2 ** i)
 ```
 
-**意图与边界**：记录来源；边界是元数据字段需要统一规范。
+**意图与边界**：基础重试；边界是未区分错误类型。
 
 ## 常见坑与排错
-- 文档混入无效内容导致检索噪声。
-- 元数据缺失导致无法溯源。
+- 密钥写死在代码里。
+- 没有回滚入口导致事故扩大。
 
 ## 性能/安全考虑
-- 加载大文件时要分批处理。
-- 对外部文档做安全扫描。
+- 限制并发与 QPS。
+- 日志避免记录敏感输入。
 
 ## 测试与验证
-- 抽样检查文档内容是否完整。
-- 统计重复率。
+- 压力测试 QPS。
+- 故障演练（手动触发回滚）。
 
 ## 最小可复现示例
-1. 创建 `kb.txt` 并写入一行内容。
+1. 设置 `LLM_MODEL` 环境变量。
 2. 运行示例 1。
-3. 预期输出：文档文本。
+3. 预期输出：环境变量中的模型名。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -140,4 +143,4 @@ print(doc.metadata)
 
 
 ## 总结
-知识库质量决定 RAG 上限，加载与清洗是基础工程。
+部署的核心是“稳定运行”，比模型本身更重要。

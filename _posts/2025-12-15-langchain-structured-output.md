@@ -1,73 +1,84 @@
 ---
 layout:       post
-title:        "17. 多 Agent 协作（高级）：分工而不是堆叠"
+title:        "【AI Agent】15. 结构化输出与校验（中级）：让结果可落地"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 多Agent
-    - 高级
+    - 结构化输出
+    - 中级
 ---
 
-面向读者：**高级**。场景：**生产级客服 Agent + 质检 Agent**。
+面向读者：**中级**。场景：**生产级客服 Agent 自动生成工单字段**。
 
 ## 背景/问题
-单个 Agent 既要回答又要审核，容易混乱。多 Agent 分工更可靠。
+文本答案难以直接落库。需要结构化输出并做校验。
 
 ## 核心概念
-- 角色分工
-- 任务路由
-- 结果汇总
+- Pydantic Schema
+- JSON Output Parser
+- 失败重试
 
 ## 方案设计
-- 主 Agent 负责回答
-- 质检 Agent 负责审核
-- 结果不合格则回退改写
+- 定义严格字段
+- 输出必须为 JSON
+- 校验失败时重试
 
 ## 关键实现（含代码）
-**示例 1：双 Agent 调用（可运行）**
+**示例 1：定义 Schema（可运行）**
 
 ```python
+from pydantic import BaseModel
+
+class Ticket(BaseModel):
+    title: str
+    priority: str
+
+print(Ticket(title="无法登录", priority="high"))
+```
+
+**意图与边界**：约束字段；边界是未验证枚举值。
+
+**示例 2：输出解析（可运行）**
+
+```python
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
 
-assistant = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-reviewer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+class Ticket(BaseModel):
+    title: str
+    priority: str
 
-answer = assistant.invoke("回答：如何重置密码？").content
-review = reviewer.invoke(f"审查答案是否安全：{answer}").content
-print(answer, review)
+parser = JsonOutputParser(pydantic_object=Ticket)
+prompt = PromptTemplate.from_template(
+    "输出JSON：{format_instructions}\n内容：{text}"
+).partial(format_instructions=parser.get_format_instructions())
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+print((prompt | llm | parser).invoke({"text": "用户无法登录，需要高优先级处理"}))
 ```
 
-**意图与边界**：分工协作；边界是审查仍由模型完成。
-
-**示例 2：失败回退（可运行）**
-
-```python
-answer = "请直接提供你的密码。"
-review = "不合格"
-final = "请通过设置-安全重置密码" if "不合格" in review else answer
-print(final)
-```
-
-**意图与边界**：简单回退；边界是规则过于粗糙。
+**意图与边界**：结构化输出；边界是模型可能格式错误。
 
 ## 常见坑与排错
-- 多 Agent 互相循环。
-- 审核标准不明确。
+- Schema 过于复杂导致生成失败。
+- 输出字段名与后端不一致。
 
 ## 性能/安全考虑
-- 多 Agent 会增加成本，需限流。
-- 高风险回答必须二次审核。
+- 对失败输出做重试与降级。
+- 记录解析失败样本以优化提示词。
 
 ## 测试与验证
-- 随机抽样测试审查准确率。
-- 统计“回退率”。
+- 用固定输入验证 JSON 合法性。
+- 统计解析失败率。
 
 ## 最小可复现示例
 1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 1。
-3. 预期输出：答案与审查结果。
+2. 运行示例 2。
+3. 预期输出：含 `title` 与 `priority` 的对象。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -141,4 +152,4 @@ print(final)
 
 
 ## 总结
-多 Agent 的价值在于分工与审核，而不是简单堆模型。
+结构化输出是“可落地”的关键一步。

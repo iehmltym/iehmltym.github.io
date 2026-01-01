@@ -1,6 +1,6 @@
 ---
 layout:       post
-title:        "05. Agents 实战（中级）：规划与可控性的平衡"
+title:        "【AI Agent】05. Agents 实战（中级）：规划与可控性的平衡"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true

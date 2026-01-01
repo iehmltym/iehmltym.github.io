@@ -1,74 +1,77 @@
 ---
 layout:       post
-title:        "06. Memory 设计（中级）：让 Agent 记住重点"
+title:        "【AI Agent】02. LCEL 组合式编排（初学）：让流程可读、可替换"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - Memory
-    - 中级
+    - LCEL
+    - 入门
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 识别用户偏好**。
+面向读者：**初学**。场景：**生产级客服 Agent 的标准化流程**。
 
 ## 背景/问题
-对话越长成本越高，但用户又希望“被记住”。需要“摘要+检索”的记忆策略。
+当流程变复杂（分类、检索、总结），把逻辑写进一个函数会失控。需要可视化的管道式表达。
 
 ## 核心概念
-- ConversationBufferMemory
-- 摘要记忆
-- 向量记忆检索
+- **Runnable**：可执行节点。
+- **管道操作符 `|`**：组合流程。
+- **并行 `map`**：批量处理。
 
 ## 方案设计
-- 短期：对话缓冲
-- 长期：摘要存储并向量化
-- 只保存“偏好与关键事实”
+把流程拆成模块：输入规范化 → LLM → 解析 → 审计日志。
 
 ## 关键实现（含代码）
-**示例 1：短期记忆（可运行）**
+**示例 1：最小 LCEL 链（可运行）**
 
 ```python
-from langchain.memory import ConversationBufferMemory
-
-memory = ConversationBufferMemory(return_messages=True)
-memory.save_context({"input": "我喜欢英文回复"}, {"output": "好的"})
-print(memory.load_memory_variables({}))
-```
-
-**意图与边界**：保存对话；边界是上下文无限增长。
-
-**示例 2：摘要记忆（可运行）**
-
-```python
-from langchain.memory import ConversationSummaryMemory
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
+prompt = PromptTemplate.from_template("用一句话总结：{text}")
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-memory = ConversationSummaryMemory(llm=llm)
+chain = prompt | llm
 
-memory.save_context({"input": "我经常出差"}, {"output": "了解"})
-print(memory.buffer)
+print(chain.invoke({"text": "用户忘记密码，想自助重置。"}).content)
 ```
 
-**意图与边界**：压缩记忆；边界是摘要可能丢信息。
+**意图与边界**：快速验证管道可运行；边界是无后处理。
+
+**示例 2：加入解析器（可运行）**
+
+```python
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+
+prompt = PromptTemplate.from_template("请输出一句话结论：{text}")
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+parser = StrOutputParser()
+chain = prompt | llm | parser
+
+print(chain.invoke({"text": "用户申诉被误封"}))
+```
+
+**意图与边界**：保证输出为纯文本；边界是无法结构化。
 
 ## 常见坑与排错
-- 记忆内容混入隐私信息，违反合规。
-- 摘要过度压缩导致“忘记重点”。
+- LCEL 里输入输出类型不一致导致运行错误。
+- 多环节链路难定位，可对每步单独 `invoke`。
 
 ## 性能/安全考虑
-- 记忆做 TTL 清理。
-- 明确允许记忆的字段白名单。
+- 在生产里可开启缓存，减少重复调用。
+- 提示词包含用户隐私时要脱敏。
 
 ## 测试与验证
-- 验证“偏好类信息”是否能被回忆。
-- 记录记忆长度与成本。
+- 单测每个节点是否返回正确类型。
+- 在 CI 里跑最小链路样例。
 
 ## 最小可复现示例
 1. 配置 `OPENAI_API_KEY`。
-2. 运行示例 2。
-3. 预期输出：摘要文本。
+2. 运行示例 1。
+3. 预期输出：一句话总结。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -142,4 +145,4 @@ print(memory.buffer)
 
 
 ## 总结
-Memory 要“记重点、忘琐碎”，才能在生产里可控。
+LCEL 让链条像“流水线”，可读、可替换，是生产 Agent 的基础表达方式。

@@ -1,84 +1,93 @@
 ---
 layout:       post
-title:        "18. 流式与异步（高级）：降低延迟与提升吞吐"
+title:        "【AI Agent】01. LangChain 全景入门（初学）：生产级 Agent 的第一步"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 流式
-    - 高级
+    - 入门
+    - Agent
+    - 生产实践
 ---
 
-面向读者：**高级**。场景：**生产级客服 Agent 并发服务**。
+面向读者：**初学**。场景：**生产级客服 Agent**（多轮对话、工具调用、可审计）。
 
 ## 背景/问题
-实时对话需要低延迟，但同步调用会阻塞。需要流式和异步调用。
+把大模型直接接到客服系统，常见问题是：回复不稳定、缺乏工具调用、难以审计。需要一个可组合、可测试的框架来组织提示词、工具、检索和日志。
 
 ## 核心概念
-- Streaming
-- Async invoke
-- 并发控制
+- **PromptTemplate**：参数化提示词。
+- **LCEL**：用管道组合流程。
+- **工具调用**：让 Agent 执行“动作”。
+- **输出解析**：保证结构化结果。
 
 ## 方案设计
-- 对用户采用流式输出
-- 内部任务用异步批处理
+- 用 PromptTemplate 规范输入输出。
+- 用 LCEL 把“问题 → 模型 → 结构化输出”串起来。
+- 先不引入复杂 Agent，保证最小链路稳定。
 
 ## 关键实现（含代码）
-**示例 1：异步调用（可运行）**
+**示例 1：最小链路（可运行）**
 
 ```python
-import asyncio
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-async def main():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-    resp = await llm.ainvoke("用一句话回答：如何退款？")
-    print(resp.content)
+prompt = PromptTemplate.from_template(
+    "你是客服助手，请用三句话回答：{question}"
+)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+chain = prompt | llm
 
-asyncio.run(main())
+result = chain.invoke({"question": "如何重置密码？"})
+print(result.content)
 ```
 
-**意图与边界**：异步调用模型；边界是需要事件循环。
+**意图与边界**：快速验证模型可用性；边界是没有工具调用与审计。
 
-**示例 2：并发批处理（可运行）**
+**示例 2：结构化输出（可运行）**
 
 ```python
-import asyncio
+from langchain_core.output_parsers import JsonOutputParser
+from pydantic import BaseModel, Field
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-async def ask(q):
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-    return (await llm.ainvoke(q)).content
+class Answer(BaseModel):
+    summary: str = Field(description="一句话总结")
+    steps: list[str] = Field(description="操作步骤")
 
-async def main():
-    results = await asyncio.gather(
-        ask("退款多久到账？"),
-        ask("怎么解绑银行卡？")
-    )
-    print(results)
+parser = JsonOutputParser(pydantic_object=Answer)
 
-asyncio.run(main())
+prompt = PromptTemplate.from_template(
+    "请输出JSON，格式如下：{format_instructions}\n问题：{question}"
+).partial(format_instructions=parser.get_format_instructions())
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+chain = prompt | llm | parser
+
+print(chain.invoke({"question": "如何解绑银行卡？"}))
 ```
 
-**意图与边界**：并发处理；边界是并发过高会触发限流。
+**意图与边界**：确保可解析；边界是模型可能输出非法 JSON，需要重试。
 
 ## 常见坑与排错
-- 未限制并发导致速率限制。
-- 异步异常未捕获导致任务中断。
+- Prompt 模板里参数名不一致导致 KeyError。
+- 模型输出 JSON 不规范，需要加重试或修复器。
 
 ## 性能/安全考虑
-- 设置并发上限。
-- 对流式输出进行内容过滤。
+- 生产环境建议设置 **temperature ≤ 0.3**。
+- 日志中避免存储用户敏感信息。
 
 ## 测试与验证
-- 压测并发下的响应时间。
-- 模拟限流错误场景。
+- 单元测试：PromptTemplate 是否格式化成功。
+- 回归测试：同问题多次运行输出一致性。
 
 ## 最小可复现示例
-1. 配置 `OPENAI_API_KEY`。
+1. 设置环境变量 `OPENAI_API_KEY`。
 2. 运行示例 1。
-3. 预期输出：一句话回答。
+3. 预期输出：三句话回答“如何重置密码”。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -152,4 +161,4 @@ asyncio.run(main())
 
 
 ## 总结
-异步与流式是生产级 Agent 低延迟的关键手段。
+先搭建最小链路，确认可控输出，再逐步加入工具调用与检索，这是生产级 Agent 的安全起点。

@@ -1,73 +1,70 @@
 ---
 layout:       post
-title:        "08. 评估与监控（中级）：让输出可量化"
+title:        "【AI Agent】12. 向量库与索引（中级）：检索的效率基石"
 author:       "iehmltym（張）"
 header-style: text
 catalog:      true
 tags:
     - LangChain
-    - 评估
+    - 向量库
     - 中级
 ---
 
-面向读者：**中级**。场景：**生产级客服 Agent 的质量评估**。
+面向读者：**中级**。场景：**生产级客服 Agent 知识库检索**。
 
 ## 背景/问题
-没有评估就无法改进。需要离线评估 + 在线监控体系。
+文档量大时，检索速度与准确性很关键。需要合理选择向量库与索引策略。
 
 ## 核心概念
-- 评估样本集
-- 指标：相关性、忠实度
-- 日志追踪
+- 向量嵌入
+- 近似最近邻索引
+- 相似度搜索
 
 ## 方案设计
-- 建立固定问答集
-- 记录检索内容与最终输出
-- 定期抽样人工打分
+- 小规模可用 FAISS
+- 大规模用外部向量库
+- 建立定期重建索引策略
 
 ## 关键实现（含代码）
-**示例 1：简单评估打分（可运行）**
+**示例 1：FAISS 索引（可运行）**
 
 ```python
-from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-question = "如何重置密码？"
-answer = llm.invoke(f"用一句话回答：{question}").content
-print({"question": question, "answer": answer})
+texts = ["退货流程", "解绑银行卡", "重置密码"]
+store = FAISS.from_texts(texts, OpenAIEmbeddings())
+print(store.similarity_search("怎么退货？", k=1)[0].page_content)
 ```
 
-**意图与边界**：采样输出；边界是未计算指标。
+**意图与边界**：快速建立索引；边界是内存限制。
 
-**示例 2：离线抽样记录（可运行）**
+**示例 2：相似度阈值过滤（可运行）**
 
 ```python
-import json
-samples = [
-    {"question": "退款多久到账？", "expected": "1-3 个工作日"},
-]
-with open("eval_samples.json", "w", encoding="utf-8") as f:
-    json.dump(samples, f, ensure_ascii=False, indent=2)
-print("saved")
+docs = store.similarity_search_with_score("退货多久到账？", k=2)
+filtered = [d for d, score in docs if score < 0.5]
+print(len(filtered))
 ```
 
-**意图与边界**：构建样本集；边界是无自动评分。
+**意图与边界**：过滤低相关；边界是阈值需调优。
 
 ## 常见坑与排错
-- 只看“好不好”，不记录上下文。
-- 忽略“模型版本变化”。
+- 嵌入模型变更导致索引失效。
+- 未设置阈值导致返回噪声。
 
 ## 性能/安全考虑
-- 评估日志需脱敏。
-- 评估任务尽量离线进行。
+- 大规模向量库要做分片与备份。
+- 控制索引更新频率。
 
 ## 测试与验证
-- 计算抽样准确率。
-- 每次模型升级后回归。
+- 用基准问答集评估召回率。
+- 监控检索耗时。
 
 ## 最小可复现示例
-1. 运行示例 2。
-2. 预期输出：`eval_samples.json` 文件。
+1. 配置 `OPENAI_API_KEY`。
+2. 运行示例 1。
+3. 预期输出：包含“退货流程”的文本。
 
 
 ## 进阶实践：生产级 Agent 的落地细节
@@ -141,4 +138,4 @@ print("saved")
 
 
 ## 总结
-评估让生产 Agent 从“感觉好”走向“可量化改进”。
+向量库是 RAG 的引擎，索引策略决定检索效率与质量。
