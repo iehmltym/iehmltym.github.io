@@ -7,7 +7,7 @@ header-mask: 0.3
 multilingual: true
 ---
 
-{% include multilingual-sel.html %}
+{% include multilingual-sel.html primary_lang="ja" primary_label="日本語 | Japanese" secondary_lang="zh" secondary_label="中文 | Chinese" %}
 
 <!-- Chinese Version -->
 <div class="zh post-container">
@@ -15,10 +15,10 @@ multilingual: true
     {{ about_zh | markdownify }}
 </div>
 
-<!-- English Version -->
-<div class="en post-container">
-    {% capture about_en %}{% include about/en.md %}{% endcapture %}
-    {{ about_en | markdownify }}
+<!-- Japanese Version -->
+<div class="ja post-container">
+    {% capture about_ja %}{% include about/ja.md %}{% endcapture %}
+    {{ about_ja | markdownify }}
 </div>
 
 
