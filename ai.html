@@ -4,12 +4,12 @@ permalink: /ai/
 ---
 
 <!doctype html>
-<html lang="zh">
+<html lang="ja">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>林志玲今日值班AI小助手</title>
+  <title>林志玲 今日当番 AIアシスタント</title>
   <style>
     /* ==============================
    默认无柔光；focus 时才柔光
@@ -116,6 +116,99 @@ permalink: /ai/
       padding: 0 16px 60px;
       position: relative;
       z-index: 1;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .lang-select {
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: 1px solid rgba(255, 122, 217, 0.3);
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .night-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 122, 217, 0.25);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .night-toggle input {
+      display: none;
+    }
+
+    .night-track {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      border-radius: 999px;
+      background: linear-gradient(120deg, #ffd6f5, #d6f1ff);
+      box-shadow: inset 0 0 8px rgba(255, 122, 217, 0.35);
+    }
+
+    .night-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(124, 92, 255, 0.25);
+      transition: transform 0.25s ease;
+    }
+
+    .night-icons {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .night-toggle input:checked + .night-track .night-thumb {
+      transform: translateX(24px);
+    }
+
+    .night-toggle input:checked + .night-track {
+      background: linear-gradient(120deg, #1f1a3a, #36275f);
+      box-shadow: inset 0 0 10px rgba(255, 214, 245, 0.35);
     }
 
     .bg-blobs {
@@ -584,6 +677,66 @@ permalink: /ai/
       color: var(--muted);
       margin-top: 6px;
     }
+
+    body.night {
+      --bg: #1b1329;
+      --card: rgba(32, 24, 46, 0.9);
+      --primary: #ff90e8;
+      --primary-dark: #ff6fd1;
+      --secondary: #9b7bff;
+      --accent: #72dcff;
+      --text: #f7efff;
+      --muted: #cbbde4;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 18px 40px rgba(255, 111, 209, 0.22);
+    }
+
+    body.night {
+      background: radial-gradient(circle at top, #2c1a3d 0%, #1b142f 45%, #111827 100%);
+    }
+
+    body.night .hero {
+      background: linear-gradient(135deg, rgba(40, 28, 58, 0.95) 0%, rgba(57, 35, 78, 0.9) 50%, rgba(33, 40, 72, 0.95) 100%);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    body.night .card,
+    body.night .toolbar {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(33, 25, 50, 0.92);
+    }
+
+    body.night textarea,
+    body.night input[type="text"],
+    body.night input[type="number"],
+    body.night select,
+    body.night pre,
+    body.night .log-panel,
+    body.night .meta {
+      background: rgba(26, 19, 39, 0.9);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    body.night .tag,
+    body.night .pill,
+    body.night .style-chip {
+      background: rgba(39, 28, 58, 0.85);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+    }
+
+    body.night .blob.one {
+      background: rgba(255, 160, 232, 0.35);
+    }
+
+    body.night .blob.two {
+      background: rgba(114, 220, 255, 0.28);
+    }
+
+    body.night .blob.three {
+      background: rgba(255, 209, 150, 0.25);
+    }
   </style>
 </head>
 
@@ -594,208 +747,505 @@ permalink: /ai/
     <div class="blob three"></div>
   </div>
   <div class="wrap">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label" data-i18n="controlsLanguage">言語</span>
+        <select id="langSelect" class="lang-select">
+          <option value="ja">日本語</option>
+          <option value="zh">中文</option>
+        </select>
+      </div>
+      <label class="night-toggle">
+        <input id="nightToggle" type="checkbox" />
+        <span class="night-track">
+          <span class="night-icons">☀️ 🌙</span>
+          <span class="night-thumb"></span>
+        </span>
+        <span class="toolbar-label" data-i18n="controlsNight">ナイトモード</span>
+      </label>
+    </div>
     <div class="hero">
       <div>
-        <h1>🌸林志玲今日值班 AI小助手</h1>
-        <p>输入问题，点击，获取温柔可爱的回答~</p>
-        <p class="muted">后端地址：<code id="apiBase"></code></p>
+        <h1 data-i18n="heroTitle">🌸林志玲 今日当番 AIアシスタント</h1>
+        <p data-i18n="heroSubtitle">質問を入力して、クリックすると優しくて可愛い回答が届きます〜</p>
+        <p class="muted"><span data-i18n="heroApiLabel">バックエンド：</span><code id="apiBase"></code></p>
         <div class="hero-tags">
-          <span class="tag emphasis">默认温柔模式</span>
-          <span class="tag">架构建议</span>
-          <span class="tag">RAG 资料检索</span>
-          <span class="tag">轻量落地</span>
-          <span class="tag">流式输出</span>
+          <span class="tag emphasis" data-i18n="heroTagDefault">デフォルトやさしいモード</span>
+          <span class="tag" data-i18n="heroTagArch">アーキテクチャ提案</span>
+          <span class="tag" data-i18n="heroTagRag">RAG 資料検索</span>
+          <span class="tag" data-i18n="heroTagLite">ライト運用</span>
+          <span class="tag" data-i18n="heroTagStream">ストリーミング出力</span>
         </div>
       </div>
       <div class="hero-art">
         <div class="mascot">🧭🧠</div>
         <div class="sparkles">✨ ⚡️ 📈 ✨</div>
-        <p class="muted">Render轻量实战</p>
+        <p class="muted" data-i18n="heroArtCaption">Render ライト実践</p>
       </div>
     </div>
 
 
     <div class="card">
-      <label for="q">你的问题</label>
-      <textarea id="q" placeholder="例如：按结构说明 LangChain 核心能力与落地建议"></textarea>
+      <label for="q" data-i18n="questionLabel">質問</label>
+      <textarea id="q" data-i18n-placeholder="questionPlaceholder" placeholder="例：構成で LangChain のコア機能と導入提案を説明して"></textarea>
 
       <div class="api-input">
-        <label for="apiInput">API 地址</label>
+        <label for="apiInput" data-i18n="apiLabel">API アドレス</label>
         <input id="apiInput" type="text" />
-        <button class="ghost" onclick="saveApiBase()">保存</button>
+        <button class="ghost" onclick="saveApiBase()" data-i18n="saveButton">保存</button>
       </div>
 
       <div class="grid">
         <div>
-          <label for="session">会话 ID（用于多轮上下文）</label>
+          <label for="session" data-i18n="sessionLabel">セッションID（複数ターン用）</label>
           <input id="session" type="text" />
         </div>
         <div>
-          <label for="prompt">自定义风格提示词</label>
-          <input id="prompt" type="text" placeholder="例如：请用专业但简洁的语气回答" />
+          <label for="prompt" data-i18n="promptLabel">カスタムスタイルプロンプト</label>
+          <input id="prompt" type="text" data-i18n-placeholder="promptPlaceholder" placeholder="例：専門的で簡潔に回答して" />
         </div>
         <div>
-          <label for="attachment">上传附件（图片/音频/文件）</label>
+          <label for="attachment" data-i18n="attachmentLabel">添付ファイル（画像/音声/ファイル）</label>
           <input id="attachment" type="file" />
-          <p class="form-hint">将自动启用多模态摘要，合并到回答上下文。</p>
+          <p class="form-hint" data-i18n="attachmentHint">自動でマルチモーダル要約を有効化し、回答に統合します。</p>
         </div>
       </div>
 
       <div class="row">
-        <button onclick="ask()">提问</button>
+        <button onclick="ask()" data-i18n="askButton">質問する</button>
         <span class="status">
           <span id="dot" class="dot"></span>
-          <span id="statusText">等待输入</span>
+          <span id="statusText" data-i18n-default="statusIdle" data-is-default="true">入力待ち</span>
         </span>
-        <label class="toggle"><input id="stream" type="checkbox" checked /> 流式输出</label>
-        <label class="toggle"><input id="meta" type="checkbox" /> 显示元信息</label>
-        <label class="toggle"><input id="advisor" type="checkbox" /> 架构建议模式</label>
-        <label class="toggle"><input id="rag" type="checkbox" /> RAG 资料增强</label>
-        <label class="toggle"><input id="enableTools" type="checkbox" /> 工具调用</label>
-        <label class="toggle"><input id="enableRouter" type="checkbox" checked /> Router 自动路由</label>
-        <button class="ghost" onclick="clearSession()">清空会话</button>
+        <label class="toggle"><input id="stream" type="checkbox" checked /> <span data-i18n="streamLabel">ストリーミング出力</span></label>
+        <label class="toggle"><input id="meta" type="checkbox" /> <span data-i18n="metaLabel">メタ情報を表示</span></label>
+        <label class="toggle"><input id="advisor" type="checkbox" /> <span data-i18n="advisorLabel">アーキテクチャ提案モード</span></label>
+        <label class="toggle"><input id="rag" type="checkbox" /> <span data-i18n="ragLabel">RAG 強化</span></label>
+        <label class="toggle"><input id="enableTools" type="checkbox" /> <span data-i18n="toolsLabel">ツール呼び出し</span></label>
+        <label class="toggle"><input id="enableRouter" type="checkbox" checked /> <span data-i18n="routerLabel">Router 自動ルーティング</span></label>
+        <button class="ghost" onclick="clearSession()" data-i18n="clearSession">セッションをクリア</button>
 
       </div>
       <div class="action-bar">
-        <button class="ghost" onclick="fillAdvisorPrompt()">一键生成升级建议提示词</button>
-        <button class="ghost" onclick="fillRagPrompt()">一键 RAG 资料型提问</button>
+        <button class="ghost" onclick="fillAdvisorPrompt()" data-i18n="actionAdvisor">提案プロンプトを自動生成</button>
+        <button class="ghost" onclick="fillRagPrompt()" data-i18n="actionRag">RAG 資料型の質問をセット</button>
       </div>
-      <p class="muted">提示：开启“元信息”时会自动关闭流式输出；架构建议模式会按固定结构输出。</p>
+      <p class="muted" data-i18n="noteMeta">ヒント：メタ情報を有効にするとストリーミングは自動でオフになり、提案モードは固定構成で出力します。</p>
     </div>
 
     <div class="card">
-      <label>一键顾问风格</label>
+      <label data-i18n="styleSection">ワンクリック顧問スタイル</label>
       <div class="style-chips">
-        <button class="style-chip" data-prompt="请用专业、简洁的顾问语气回答，给出可执行要点。">专业顾问</button>
-        <button class="style-chip" data-prompt="请用要点清单输出，每段不超过 3 行。">极简要点</button>
-        <button class="style-chip" data-prompt="请以路线图形式回答，列出短中长期行动。">路线图</button>
-        <button class="style-chip" data-prompt="请强调成本与性能取舍，给出简短建议。">成本优先</button>
+        <button class="style-chip" data-style-key="styleProfessional">プロ顧問</button>
+        <button class="style-chip" data-style-key="styleMinimal">ミニマル要点</button>
+        <button class="style-chip" data-style-key="styleRoadmap">ロードマップ</button>
+        <button class="style-chip" data-style-key="styleCost">コスト優先</button>
       </div>
-      <p class="muted">点击后会自动填充「自定义风格提示词」。</p>
+      <p class="muted" data-i18n="styleHint">クリックすると「カスタムスタイルプロンプト」に自動入力されます。</p>
     </div>
 
 
     <div class="card">
-      <label>回答</label>
-      <pre id="ans">这里会显示 AI 的回答～</pre>
-      <div id="metaPanel" class="meta">元信息会显示在这里。</div>
+      <label data-i18n="answerLabel">回答</label>
+      <pre id="ans" data-i18n-default="answerDefault" data-is-default="true">ここにAIの回答が表示されます〜</pre>
+      <div id="metaPanel" class="meta" data-i18n-default="metaDefault" data-is-default="true">メタ情報がここに表示されます。</div>
     </div>
 
 
     <div class="card">
-      <h3 class="section-title">📎 多模态附件（图片 / 音频 / 文件）</h3>
-      <p class="section-subtitle">上传后先预览结构化摘要，再带着摘要发问。</p>
+      <h3 class="section-title" data-i18n="attachmentTitle">📎 マルチモーダル添付（画像 / 音声 / ファイル）</h3>
+      <p class="section-subtitle" data-i18n="attachmentSubtitle">アップロード後に要約を確認してから質問しましょう。</p>
       <div class="grid">
         <div>
-          <label for="attachment">选择附件</label>
+          <label for="attachment" data-i18n="attachmentChoose">添付ファイルを選択</label>
           <input id="attachment" type="file" />
-          <p class="form-hint">支持图片、音频与通用文件（<= 6MB）。</p>
+          <p class="form-hint" data-i18n="attachmentSupport">画像、音声、一般ファイル（<= 6MB）に対応。</p>
         </div>
         <div>
-          <label>附件摘要</label>
-          <pre id="attachmentPreview">尚未上传</pre>
+          <label data-i18n="attachmentSummary">添付要約</label>
+          <pre id="attachmentPreview" data-i18n-default="attachmentEmpty" data-is-default="true">未アップロード</pre>
         </div>
       </div>
       <div class="row">
-        <button class="ghost" onclick="previewAttachment()">预览附件摘要</button>
+        <button class="ghost" onclick="previewAttachment()" data-i18n="attachmentPreviewButton">添付要約をプレビュー</button>
       </div>
     </div>
 
     <div class="card">
-      <h3 class="section-title">🧠 LLM 控制面板</h3>
-      <p class="section-subtitle">统一配置 Provider、温度、token、回退与重试策略。</p>
+      <h3 class="section-title" data-i18n="llmTitle">🧠 LLM コントロールパネル</h3>
+      <p class="section-subtitle" data-i18n="llmSubtitle">Provider・温度・token・フォールバック・リトライをまとめて設定。</p>
       <div class="grid">
         <div>
-          <label for="provider">Provider</label>
+          <label for="provider" data-i18n="providerLabel">Provider</label>
           <select id="provider"></select>
-          <p class="form-hint">建议使用 auto，由 Router 自动选择。</p>
+          <p class="form-hint" data-i18n="providerHint">auto 推奨。Router が自動選択します。</p>
         </div>
         <div>
-          <label for="temperature">Temperature</label>
+          <label for="temperature" data-i18n="temperatureLabel">Temperature</label>
           <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.7" />
         </div>
         <div>
-          <label for="maxTokens">Max tokens</label>
+          <label for="maxTokens" data-i18n="maxTokensLabel">Max tokens</label>
           <input id="maxTokens" type="number" min="128" max="4096" step="128" value="2048" />
         </div>
         <div>
-          <label for="topP">Top-p</label>
+          <label for="topP" data-i18n="topPLabel">Top-p</label>
           <input id="topP" type="number" min="0" max="1" step="0.05" value="1" />
         </div>
         <div>
-          <label for="topK">Top-k</label>
+          <label for="topK" data-i18n="topKLabel">Top-k</label>
           <input id="topK" type="number" min="1" max="40" step="1" value="1" />
         </div>
         <div>
-          <label for="retries">重试次数</label>
+          <label for="retries" data-i18n="retriesLabel">リトライ回数</label>
           <input id="retries" type="number" min="1" max="3" step="1" value="1" />
         </div>
       </div>
       <div class="row">
-        <label for="fallback" style="flex:1">回退 Provider（逗号分隔）</label>
-        <input id="fallback" type="text" placeholder="例如：openai,anthropic" style="flex:2" />
+        <label for="fallback" style="flex:1" data-i18n="fallbackLabel">フォールバック Provider（カンマ区切り）</label>
+        <input id="fallback" type="text" data-i18n-placeholder="fallbackPlaceholder" placeholder="例：openai,anthropic" style="flex:2" />
       </div>
     </div>
 
 
     <div class="card">
-      <label>链式流程（Chains）</label>
+      <label data-i18n="chainLabel">チェーンフロー（Chains）</label>
       <div id="chainSteps" class="pill-list"></div>
-      <p class="muted">预处理 → 工具 → 检索 → 生成 → 后处理，可扩展分支与并行。</p>
+      <p class="muted" data-i18n="chainHint">前処理 → ツール → 検索 → 生成 → 後処理。分岐や並列も拡張可能。</p>
     </div>
 
     <div class="card">
-      <label>轻量观测面板</label>
+      <label data-i18n="observabilityLabel">ライト観測パネル</label>
       <div class="status-panel">
         <div class="status-item">
-          <h4>请求总量</h4>
-          <p id="statRequests">加载中...</p>
+          <h4 data-i18n="statRequestsLabel">リクエスト総数</h4>
+          <p id="statRequests" data-i18n-default="loading" data-is-default="true">読み込み中...</p>
         </div>
         <div class="status-item">
-          <h4>缓存命中</h4>
-          <p id="statCache">加载中...</p>
+          <h4 data-i18n="statCacheLabel">キャッシュ命中</h4>
+          <p id="statCache" data-i18n-default="loading" data-is-default="true">読み込み中...</p>
         </div>
         <div class="status-item">
-          <h4>会话数</h4>
-          <p id="statSessions">加载中...</p>
+          <h4 data-i18n="statSessionsLabel">セッション数</h4>
+          <p id="statSessions" data-i18n-default="loading" data-is-default="true">読み込み中...</p>
         </div>
         <div class="status-item">
-          <h4>策略提示</h4>
-          <p>低成本优先：RAG + streaming → Router → 轻量工具。</p>
+          <h4 data-i18n="statStrategyLabel">戦略ヒント</h4>
+          <p data-i18n="statStrategyText">低コスト優先：RAG + streaming → Router → 軽量ツール。</p>
         </div>
       </div>
-      <div class="log-panel" id="observabilityLog">等待刷新观测数据...</div>
+      <div class="log-panel" id="observabilityLog" data-i18n-default="observabilityLoading" data-is-default="true">観測データを待機中...</div>
     </div>
 
     <div class="card">
-      <h3 class="section-title">🛰️ 运营控制台（超轻量友好）</h3>
-      <p class="section-subtitle">一键查看系统状态、近期请求、缓存与会话，运营更稳。</p>
+      <h3 class="section-title" data-i18n="opsTitle">🛰️ 運用コンソール（超ライト）</h3>
+      <p class="section-subtitle" data-i18n="opsSubtitle">システム状態・最近のリクエスト・キャッシュ・セッションをワンクリックで確認。</p>
       <div class="action-bar">
-        <button class="ghost" onclick="loadSystemInfo()">刷新系统状态</button>
-        <button class="ghost" onclick="loadObservability()">拉取最近请求</button>
-        <button class="ghost" onclick="clearObservability()">清空请求日志</button>
-        <button class="ghost" onclick="clearCache()">清空回答缓存</button>
+        <button class="ghost" onclick="loadSystemInfo()" data-i18n="refreshSystem">システム状態を更新</button>
+        <button class="ghost" onclick="loadObservability()" data-i18n="loadObservability">最近のリクエスト取得</button>
+        <button class="ghost" onclick="clearObservability()" data-i18n="clearObservability">リクエストログをクリア</button>
+        <button class="ghost" onclick="clearCache()" data-i18n="clearCache">回答キャッシュをクリア</button>
       </div>
       <div class="grid">
         <div>
-          <label>系统状态</label>
-          <pre id="systemInfo">等待查询...</pre>
+          <label data-i18n="systemStatusLabel">システム状態</label>
+          <pre id="systemInfo" data-i18n-default="systemStatusPlaceholder" data-is-default="true">待機中...</pre>
         </div>
         <div>
-          <label>最近请求日志</label>
-          <pre id="observabilityEvents">等待查询...</pre>
+          <label data-i18n="observabilityLabel2">最近のリクエストログ</label>
+          <pre id="observabilityEvents" data-i18n-default="observabilityPlaceholder" data-is-default="true">待機中...</pre>
         </div>
       </div>
-      <p class="muted">提示：日志与缓存均为内存级别，重启后会清空。</p>
+      <p class="muted" data-i18n="opsHint">ヒント：ログとキャッシュはメモリ内のみで、再起動すると消えます。</p>
     </div>
 
 
-    <div class="footer">Made with ❤️ by iehmltym</div>
+    <div class="footer" data-i18n="footer">Made with ❤️ by iehmltym</div>
   </div>
 
   <script>
     const DEFAULT_API_BASE = "https://myagent-mhrq.onrender.com";
+    const translations = {
+      ja: {
+        title: "林志玲 今日当番 AIアシスタント",
+        controlsLanguage: "言語",
+        controlsNight: "ナイトモード",
+        heroTitle: "🌸林志玲 今日当番 AIアシスタント",
+        heroSubtitle: "質問を入力して、クリックすると優しくて可愛い回答が届きます〜",
+        heroApiLabel: "バックエンド：",
+        heroTagDefault: "デフォルトやさしいモード",
+        heroTagArch: "アーキテクチャ提案",
+        heroTagRag: "RAG 資料検索",
+        heroTagLite: "ライト運用",
+        heroTagStream: "ストリーミング出力",
+        heroArtCaption: "Render ライト実践",
+        questionLabel: "質問",
+        questionPlaceholder: "例：構成で LangChain のコア機能と導入提案を説明して",
+        apiLabel: "API アドレス",
+        saveButton: "保存",
+        sessionLabel: "セッションID（複数ターン用）",
+        promptLabel: "カスタムスタイルプロンプト",
+        promptPlaceholder: "例：専門的で簡潔に回答して",
+        attachmentLabel: "添付ファイル（画像/音声/ファイル）",
+        attachmentHint: "自動でマルチモーダル要約を有効化し、回答に統合します。",
+        askButton: "質問する",
+        statusIdle: "入力待ち",
+        streamLabel: "ストリーミング出力",
+        metaLabel: "メタ情報を表示",
+        advisorLabel: "アーキテクチャ提案モード",
+        ragLabel: "RAG 強化",
+        toolsLabel: "ツール呼び出し",
+        routerLabel: "Router 自動ルーティング",
+        clearSession: "セッションをクリア",
+        actionAdvisor: "提案プロンプトを自動生成",
+        actionRag: "RAG 資料型の質問をセット",
+        noteMeta: "ヒント：メタ情報を有効にするとストリーミングは自動でオフになり、提案モードは固定構成で出力します。",
+        styleSection: "ワンクリック顧問スタイル",
+        styleHint: "クリックすると「カスタムスタイルプロンプト」に自動入力されます。",
+        answerLabel: "回答",
+        answerDefault: "ここにAIの回答が表示されます〜",
+        metaDefault: "メタ情報がここに表示されます。",
+        attachmentTitle: "📎 マルチモーダル添付（画像 / 音声 / ファイル）",
+        attachmentSubtitle: "アップロード後に要約を確認してから質問しましょう。",
+        attachmentChoose: "添付ファイルを選択",
+        attachmentSupport: "画像、音声、一般ファイル（<= 6MB）に対応。",
+        attachmentSummary: "添付要約",
+        attachmentEmpty: "未アップロード",
+        attachmentPreviewButton: "添付要約をプレビュー",
+        llmTitle: "🧠 LLM コントロールパネル",
+        llmSubtitle: "Provider・温度・token・フォールバック・リトライをまとめて設定。",
+        providerLabel: "Provider",
+        providerHint: "auto 推奨。Router が自動選択します。",
+        temperatureLabel: "Temperature",
+        maxTokensLabel: "Max tokens",
+        topPLabel: "Top-p",
+        topKLabel: "Top-k",
+        retriesLabel: "リトライ回数",
+        fallbackLabel: "フォールバック Provider（カンマ区切り）",
+        fallbackPlaceholder: "例：openai,anthropic",
+        chainLabel: "チェーンフロー（Chains）",
+        chainHint: "前処理 → ツール → 検索 → 生成 → 後処理。分岐や並列も拡張可能。",
+        observabilityLabel: "ライト観測パネル",
+        statRequestsLabel: "リクエスト総数",
+        statCacheLabel: "キャッシュ命中",
+        statSessionsLabel: "セッション数",
+        statStrategyLabel: "戦略ヒント",
+        statStrategyText: "低コスト優先：RAG + streaming → Router → 軽量ツール。",
+        observabilityLoading: "観測データを待機中...",
+        opsTitle: "🛰️ 運用コンソール（超ライト）",
+        opsSubtitle: "システム状態・最近のリクエスト・キャッシュ・セッションをワンクリックで確認。",
+        refreshSystem: "システム状態を更新",
+        loadObservability: "最近のリクエスト取得",
+        clearObservability: "リクエストログをクリア",
+        clearCache: "回答キャッシュをクリア",
+        systemStatusLabel: "システム状態",
+        systemStatusPlaceholder: "待機中...",
+        observabilityLabel2: "最近のリクエストログ",
+        observabilityPlaceholder: "待機中...",
+        opsHint: "ヒント：ログとキャッシュはメモリ内のみで、再起動すると消えます。",
+        footer: "Made with ❤️ by iehmltym",
+        loading: "読み込み中...",
+        alertApiInvalid: "有効な API アドレスを入力してください",
+        commandsLoadFail: "コマンドの読み込みに失敗しました。しばらくして再試行してください。",
+        blueprintLoadFail: "ブループリントの読み込みに失敗しました。しばらくして再試行してください。",
+        statsLoadFail: "観測データの読み込みに失敗しました。しばらくして再試行してください。",
+        systemLoading: "読み込み中...",
+        systemFail: "システム状態の取得に失敗しました。しばらくして再試行してください。",
+        observabilityLoadingText: "読み込み中...",
+        observabilityFail: "観測ログの取得に失敗しました。しばらくして再試行してください。",
+        observabilityClearing: "クリア中...",
+        observabilityCleared: "ログを {count} 件クリアしました。",
+        observabilityClearFail: "クリアに失敗しました。しばらくして再試行してください。",
+        cacheClearing: "クリア中...",
+        cacheCleared: "キャッシュをクリアしました。{count} 件削除、残り {size}。",
+        cacheClearFail: "クリアに失敗しました。しばらくして再試行してください。",
+        sessionMissing: "まずセッションIDを入力してください",
+        sessionCleared: "セッションをクリアしました（存在しない場合も含む）",
+        attachmentMissing: "先に添付ファイルを選択してください。",
+        attachmentAnalyzing: "解析中...",
+        attachmentParseFail: "解析に失敗しました：{message}",
+        advisorPrompt: "「コア能力（LangChainでできること）→ 代表的な使い方 → Renderの実装提案 → 次のアップグレード」の構成で説明してください。",
+        ragPrompt: "RAG・Agent・Router・Streamingの工学的価値を踏まえ、優先順位と注意点を具体例で示してください。",
+        questionMissing: "先に質問を入力してください〜",
+        statusRequesting: "リクエスト中...",
+        statusDone: "完了 ✅",
+        statusFail: "失敗 ❌",
+        answerMissing: "(バックエンドが answer フィールドを返していません)",
+        corsHint: "リクエストに失敗しました：\n{message}\n\nブラウザコンソールでCORSエラーが見える場合、バックエンドで https://iehmltym.github.io を許可してください。",
+        statRequestsText: "総数 {total} · LLM {llm} · ルール {rule}",
+        statCacheText: "命中 {hits} / 失効 {misses} · キャッシュサイズ {size}",
+        statSessionsText: "アクティブ {active} / 上限 {max}",
+        observabilitySummary: "最近のリクエスト統計：LLM {llm} 回、ルール命中 {rule} 回、キャッシュ命中 {cache} 回。",
+        metaTemplate: "ソース：{source} | キャッシュ命中：{cacheHit} | レイテンシ：{latency}ms{ragInfo}{providerInfo}{routeInfo}{attachmentInfo}",
+        ragInfo: " | RAG ドキュメント：{docs}",
+        providerInfo: " | Provider：{provider}",
+        routeInfo: " | ルーティング：{route}",
+        attachmentInfo: " | 添付：{name} ({size}B)",
+        blueprintCore: "コア能力",
+        blueprintUse: "典型的な使い方",
+        blueprintRender: "Render",
+        blueprintNext: "次のアップグレード",
+        styleChips: {
+          styleProfessional: {
+            label: "プロ顧問",
+            prompt: "専門的で簡潔な顧問口調で回答し、実行できる要点を示してください。"
+          },
+          styleMinimal: {
+            label: "ミニマル要点",
+            prompt: "箇条書きで出力し、各段落は3行以内にしてください。"
+          },
+          styleRoadmap: {
+            label: "ロードマップ",
+            prompt: "ロードマップ形式で回答し、短期・中期・長期のアクションを示してください。"
+          },
+          styleCost: {
+            label: "コスト優先",
+            prompt: "コストと性能のトレードオフを強調し、短い提案を出してください。"
+          }
+        }
+      },
+      zh: {
+        title: "林志玲今日值班AI小助手",
+        controlsLanguage: "语言",
+        controlsNight: "夜间模式",
+        heroTitle: "🌸林志玲今日值班 AI小助手",
+        heroSubtitle: "输入问题，点击，获取温柔可爱的回答~",
+        heroApiLabel: "后端地址：",
+        heroTagDefault: "默认温柔模式",
+        heroTagArch: "架构建议",
+        heroTagRag: "RAG 资料检索",
+        heroTagLite: "轻量落地",
+        heroTagStream: "流式输出",
+        heroArtCaption: "Render轻量实战",
+        questionLabel: "你的问题",
+        questionPlaceholder: "例如：按结构说明 LangChain 核心能力与落地建议",
+        apiLabel: "API 地址",
+        saveButton: "保存",
+        sessionLabel: "会话 ID（用于多轮上下文）",
+        promptLabel: "自定义风格提示词",
+        promptPlaceholder: "例如：请用专业但简洁的语气回答",
+        attachmentLabel: "上传附件（图片/音频/文件）",
+        attachmentHint: "将自动启用多模态摘要，合并到回答上下文。",
+        askButton: "提问",
+        statusIdle: "等待输入",
+        streamLabel: "流式输出",
+        metaLabel: "显示元信息",
+        advisorLabel: "架构建议模式",
+        ragLabel: "RAG 资料增强",
+        toolsLabel: "工具调用",
+        routerLabel: "Router 自动路由",
+        clearSession: "清空会话",
+        actionAdvisor: "一键生成升级建议提示词",
+        actionRag: "一键 RAG 资料型提问",
+        noteMeta: "提示：开启“元信息”时会自动关闭流式输出；架构建议模式会按固定结构输出。",
+        styleSection: "一键顾问风格",
+        styleHint: "点击后会自动填充「自定义风格提示词」。",
+        answerLabel: "回答",
+        answerDefault: "这里会显示 AI 的回答～",
+        metaDefault: "元信息会显示在这里。",
+        attachmentTitle: "📎 多模态附件（图片 / 音频 / 文件）",
+        attachmentSubtitle: "上传后先预览结构化摘要，再带着摘要发问。",
+        attachmentChoose: "选择附件",
+        attachmentSupport: "支持图片、音频与通用文件（<= 6MB）。",
+        attachmentSummary: "附件摘要",
+        attachmentEmpty: "尚未上传",
+        attachmentPreviewButton: "预览附件摘要",
+        llmTitle: "🧠 LLM 控制面板",
+        llmSubtitle: "统一配置 Provider、温度、token、回退与重试策略。",
+        providerLabel: "Provider",
+        providerHint: "建议使用 auto，由 Router 自动选择。",
+        temperatureLabel: "Temperature",
+        maxTokensLabel: "Max tokens",
+        topPLabel: "Top-p",
+        topKLabel: "Top-k",
+        retriesLabel: "重试次数",
+        fallbackLabel: "回退 Provider（逗号分隔）",
+        fallbackPlaceholder: "例如：openai,anthropic",
+        chainLabel: "链式流程（Chains）",
+        chainHint: "预处理 → 工具 → 检索 → 生成 → 后处理，可扩展分支与并行。",
+        observabilityLabel: "轻量观测面板",
+        statRequestsLabel: "请求总量",
+        statCacheLabel: "缓存命中",
+        statSessionsLabel: "会话数",
+        statStrategyLabel: "策略提示",
+        statStrategyText: "低成本优先：RAG + streaming → Router → 轻量工具。",
+        observabilityLoading: "等待刷新观测数据...",
+        opsTitle: "🛰️ 运营控制台（超轻量友好）",
+        opsSubtitle: "一键查看系统状态、近期请求、缓存与会话，运营更稳。",
+        refreshSystem: "刷新系统状态",
+        loadObservability: "拉取最近请求",
+        clearObservability: "清空请求日志",
+        clearCache: "清空回答缓存",
+        systemStatusLabel: "系统状态",
+        systemStatusPlaceholder: "等待查询...",
+        observabilityLabel2: "最近请求日志",
+        observabilityPlaceholder: "等待查询...",
+        opsHint: "提示：日志与缓存均为内存级别，重启后会清空。",
+        footer: "Made with ❤️ by iehmltym",
+        loading: "加载中...",
+        alertApiInvalid: "请输入有效的 API 地址",
+        commandsLoadFail: "命令加载失败，请稍后重试。",
+        blueprintLoadFail: "蓝图加载失败，请稍后重试。",
+        statsLoadFail: "观测数据加载失败，请稍后重试。",
+        systemLoading: "加载中...",
+        systemFail: "系统状态获取失败，请稍后重试。",
+        observabilityLoadingText: "加载中...",
+        observabilityFail: "观测日志获取失败，请稍后重试。",
+        observabilityClearing: "清空中...",
+        observabilityCleared: "已清空 {count} 条日志。",
+        observabilityClearFail: "清空失败，请稍后重试。",
+        cacheClearing: "清空中...",
+        cacheCleared: "缓存已清空，清除 {count} 条，剩余 {size}。",
+        cacheClearFail: "清空失败，请稍后重试。",
+        sessionMissing: "请先填写会话 ID",
+        sessionCleared: "会话已清空（或不存在）",
+        attachmentMissing: "请先选择附件。",
+        attachmentAnalyzing: "分析中...",
+        attachmentParseFail: "解析失败：{message}",
+        advisorPrompt: "按“核心能力（LangChain 能做什么）→ 典型用法 → Render 落地建议 → 下一步升级”的结构说明。",
+        ragPrompt: "结合 RAG、Agent、Router、Streaming 的工程价值，给出落地优先级实例注意事项。",
+        questionMissing: "请先输入问题哦～",
+        statusRequesting: "请求中...",
+        statusDone: "完成 ✅",
+        statusFail: "失败 ❌",
+        answerMissing: "(后端没有返回 answer 字段)",
+        corsHint: "请求失败：\n{message}\n\n如果你在浏览器控制台看到 CORS 报错，需要后端放行 https://iehmltym.github.io",
+        statRequestsText: "总量 {total} · LLM {llm} · 规则 {rule}",
+        statCacheText: "命中 {hits} / 失效 {misses} · 缓存大小 {size}",
+        statSessionsText: "活跃 {active} / 上限 {max}",
+        observabilitySummary: "最近请求统计：LLM {llm} 次，规则命中 {rule} 次，缓存命中 {cache} 次。",
+        metaTemplate: "来源：{source} | 缓存命中：{cacheHit} | 延迟：{latency}ms{ragInfo}{providerInfo}{routeInfo}{attachmentInfo}",
+        ragInfo: " | RAG 文档：{docs}",
+        providerInfo: " | Provider：{provider}",
+        routeInfo: " | 路由：{route}",
+        attachmentInfo: " | 附件：{name} ({size}B)",
+        blueprintCore: "核心能力",
+        blueprintUse: "典型用法",
+        blueprintRender: "Render",
+        blueprintNext: "下一步升级",
+        styleChips: {
+          styleProfessional: {
+            label: "专业顾问",
+            prompt: "请用专业、简洁的顾问语气回答，给出可执行要点。"
+          },
+          styleMinimal: {
+            label: "极简要点",
+            prompt: "请用要点清单输出，每段不超过 3 行。"
+          },
+          styleRoadmap: {
+            label: "路线图",
+            prompt: "请以路线图形式回答，列出短中长期行动。"
+          },
+          styleCost: {
+            label: "成本优先",
+            prompt: "请强调成本与性能取舍，给出简短建议。"
+          }
+        }
+      }
+    };
     let apiBase = localStorage.getItem("api_base") || DEFAULT_API_BASE;
+    let currentLang = localStorage.getItem("ui_lang") || "ja";
+    const storedTheme = localStorage.getItem("ui_theme") || "day";
     if (window.location.hostname === "myagent-mhrq.onrender.com") {
       apiBase = window.location.origin;
     }
@@ -806,6 +1256,71 @@ permalink: /ai/
     const promptInput = document.getElementById("prompt");
     const attachmentInput = document.getElementById("attachment");
     const styleChips = document.querySelectorAll(".style-chip");
+    const langSelect = document.getElementById("langSelect");
+    const nightToggle = document.getElementById("nightToggle");
+
+    function t(key, vars = {}) {
+      const dict = translations[currentLang] || translations.ja;
+      const template = dict[key] ?? "";
+      return template.replace(/\{(\w+)\}/g, (_, name) => (vars[name] ?? ""));
+    }
+
+    function setElementText(element, text, isDefault = false) {
+      if (!element) return;
+      element.textContent = text;
+      element.dataset.isDefault = isDefault ? "true" : "false";
+    }
+
+    function applyTranslations() {
+      document.documentElement.lang = currentLang;
+      document.title = t("title");
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.dataset.i18n;
+        const value = t(key);
+        if (value) {
+          el.textContent = value;
+        }
+      });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        const key = el.dataset.i18nPlaceholder;
+        const value = t(key);
+        if (value) {
+          el.placeholder = value;
+        }
+      });
+
+      document.querySelectorAll("[data-i18n-default]").forEach((el) => {
+        const key = el.dataset.i18nDefault;
+        if (el.dataset.isDefault === "false") return;
+        const value = t(key);
+        if (value) {
+          el.textContent = value;
+        }
+      });
+
+      const chipSet = translations[currentLang]?.styleChips || {};
+      styleChips.forEach((chip) => {
+        const chipData = chipSet[chip.dataset.styleKey];
+        if (!chipData) return;
+        chip.textContent = chipData.label;
+        chip.dataset.prompt = chipData.prompt;
+      });
+    }
+
+    function setLanguage(lang) {
+      currentLang = translations[lang] ? lang : "ja";
+      localStorage.setItem("ui_lang", currentLang);
+      langSelect.value = currentLang;
+      applyTranslations();
+    }
+
+    function setNightMode(enabled) {
+      document.body.classList.toggle("night", enabled);
+      localStorage.setItem("ui_theme", enabled ? "night" : "day");
+      nightToggle.checked = enabled;
+    }
 
     function loadSessionId() {
       const stored = localStorage.getItem("session_id");
@@ -818,11 +1333,19 @@ permalink: /ai/
       sessionInput.value = generated;
     }
 
+    langSelect.addEventListener("change", (event) => {
+      setLanguage(event.target.value);
+    });
+
+    nightToggle.addEventListener("change", (event) => {
+      setNightMode(event.target.checked);
+    });
+
     function saveApiBase() {
       const input = document.getElementById("apiInput");
       const nextBase = input.value.trim();
       if (!nextBase) {
-        alert("请输入有效的 API 地址");
+        alert(t("alertApiInvalid"));
         return;
       }
       apiBase = nextBase;
@@ -839,6 +1362,7 @@ permalink: /ai/
         if (!resp.ok) throw new Error("无法获取特性列表");
         const data = await resp.json();
         const container = document.getElementById("commands");
+        if (!container) return;
         container.innerHTML = "";
         data.commands.forEach((item) => {
           const pill = document.createElement("button");
@@ -868,7 +1392,10 @@ permalink: /ai/
           chainSteps.appendChild(pill);
         });
       } catch (e) {
-        document.getElementById("commands").textContent = "命令加载失败，请稍后重试。";
+        const commands = document.getElementById("commands");
+        if (commands) {
+          commands.textContent = t("commandsLoadFail");
+        }
       }
     }
 
@@ -889,10 +1416,10 @@ permalink: /ai/
         const resp = await fetch(`${apiBase}/blueprint`);
         if (!resp.ok) throw new Error("无法获取蓝图数据");
         const data = await resp.json();
-        renderBlueprintSection("blueprintCore", "核心能力", data.sections.core);
-        renderBlueprintSection("blueprintUse", "典型用法", data.sections.use);
-        renderBlueprintSection("blueprintRender", "Render", data.sections.render);
-        renderBlueprintSection("blueprintNext", "下一步升级", data.sections.next);
+        renderBlueprintSection("blueprintCore", t("blueprintCore"), data.sections.core);
+        renderBlueprintSection("blueprintUse", t("blueprintUse"), data.sections.use);
+        renderBlueprintSection("blueprintRender", t("blueprintRender"), data.sections.render);
+        renderBlueprintSection("blueprintNext", t("blueprintNext"), data.sections.next);
         const tips = document.getElementById("blueprintTips");
         tips.innerHTML = "";
         data.tips.forEach((tip) => {
@@ -902,7 +1429,10 @@ permalink: /ai/
           tips.appendChild(pill);
         });
       } catch (e) {
-        document.getElementById("blueprintCore").textContent = "蓝图加载失败，请稍后重试。";
+        const blueprintCore = document.getElementById("blueprintCore");
+        if (blueprintCore) {
+          blueprintCore.textContent = t("blueprintLoadFail");
+        }
       }
     }
 
@@ -911,75 +1441,98 @@ permalink: /ai/
         const resp = await fetch(`${apiBase}/stats`);
         if (!resp.ok) throw new Error("无法获取统计数据");
         const data = await resp.json();
-        document.getElementById("statRequests").textContent =
-          `总量 ${data.requests.total} · LLM ${data.requests.llm} · 规则 ${data.requests.rule}`;
-        document.getElementById("statCache").textContent =
-          `命中 ${data.cache.hits} / 失效 ${data.cache.misses} · 缓存大小 ${data.cache.size}`;
-        document.getElementById("statSessions").textContent =
-          `活跃 ${data.sessions.active} / 上限 ${data.sessions.max}`;
-        document.getElementById("observabilityLog").textContent =
-          `最近请求统计：LLM ${data.requests.llm} 次，规则命中 ${data.requests.rule} 次，缓存命中 ${data.requests.cache} 次。`;
+        setElementText(
+          document.getElementById("statRequests"),
+          t("statRequestsText", {
+            total: data.requests.total,
+            llm: data.requests.llm,
+            rule: data.requests.rule
+          })
+        );
+        setElementText(
+          document.getElementById("statCache"),
+          t("statCacheText", {
+            hits: data.cache.hits,
+            misses: data.cache.misses,
+            size: data.cache.size
+          })
+        );
+        setElementText(
+          document.getElementById("statSessions"),
+          t("statSessionsText", {
+            active: data.sessions.active,
+            max: data.sessions.max
+          })
+        );
+        setElementText(
+          document.getElementById("observabilityLog"),
+          t("observabilitySummary", {
+            llm: data.requests.llm,
+            rule: data.requests.rule,
+            cache: data.requests.cache
+          })
+        );
       } catch (e) {
-        document.getElementById("observabilityLog").textContent = "观测数据加载失败，请稍后重试。";
+        setElementText(document.getElementById("observabilityLog"), t("statsLoadFail"));
       }
     }
 
     async function loadSystemInfo() {
       const panel = document.getElementById("systemInfo");
-      panel.textContent = "加载中...";
+      setElementText(panel, t("systemLoading"), true);
       try {
         const resp = await fetch(`${apiBase}/system`);
         if (!resp.ok) throw new Error("无法获取系统状态");
         const data = await resp.json();
-        panel.textContent = JSON.stringify(data, null, 2);
+        setElementText(panel, JSON.stringify(data, null, 2));
       } catch (e) {
-        panel.textContent = "系统状态获取失败，请稍后重试。";
+        setElementText(panel, t("systemFail"));
       }
     }
 
     async function loadObservability() {
       const panel = document.getElementById("observabilityEvents");
-      panel.textContent = "加载中...";
+      setElementText(panel, t("observabilityLoadingText"), true);
       try {
         const resp = await fetch(`${apiBase}/observability/logs?limit=20`);
         if (!resp.ok) throw new Error("无法获取观测日志");
         const data = await resp.json();
-        panel.textContent = JSON.stringify(data.events || [], null, 2);
+        setElementText(panel, JSON.stringify(data.events || [], null, 2));
       } catch (e) {
-        panel.textContent = "观测日志获取失败，请稍后重试。";
+        setElementText(panel, t("observabilityFail"));
       }
     }
 
     async function clearObservability() {
       const panel = document.getElementById("observabilityEvents");
-      panel.textContent = "清空中...";
+      setElementText(panel, t("observabilityClearing"), true);
       try {
         const resp = await fetch(`${apiBase}/observability/clear`, { method: "POST" });
         if (!resp.ok) throw new Error("无法清空日志");
         const data = await resp.json();
-        panel.textContent = `已清空 ${data.cleared} 条日志。`;
+        setElementText(panel, t("observabilityCleared", { count: data.cleared }));
       } catch (e) {
-        panel.textContent = "清空失败，请稍后重试。";
+        setElementText(panel, t("observabilityClearFail"));
       }
     }
 
     async function clearCache() {
       const panel = document.getElementById("systemInfo");
-      panel.textContent = "清空中...";
+      setElementText(panel, t("cacheClearing"), true);
       try {
         const resp = await fetch(`${apiBase}/cache/clear`, { method: "POST" });
         if (!resp.ok) throw new Error("无法清空缓存");
         const data = await resp.json();
-        panel.textContent = `缓存已清空，清除 ${data.cleared} 条，剩余 ${data.cache_size}。`;
+        setElementText(panel, t("cacheCleared", { count: data.cleared, size: data.cache_size }));
       } catch (e) {
-        panel.textContent = "清空失败，请稍后重试。";
+        setElementText(panel, t("cacheClearFail"));
       }
     }
 
     async function clearSession() {
       const sessionId = sessionInput.value.trim();
       if (!sessionId) {
-        alert("请先填写会话 ID");
+        alert(t("sessionMissing"));
         return;
       }
       await fetch(`${apiBase}/session/clear`, {
@@ -987,17 +1540,17 @@ permalink: /ai/
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId })
       });
-      alert("会话已清空（或不存在）");
+      alert(t("sessionCleared"));
     }
 
     async function previewAttachment() {
       const preview = document.getElementById("attachmentPreview");
       const file = attachmentInput?.files?.[0];
       if (!file) {
-        preview.textContent = "请先选择附件。";
+        setElementText(preview, t("attachmentMissing"));
         return;
       }
-      preview.textContent = "分析中...";
+      setElementText(preview, t("attachmentAnalyzing"));
       let endpoint = "/files/describe";
       if (file.type.startsWith("image/")) {
         endpoint = "/images/describe";
@@ -1010,20 +1563,18 @@ permalink: /ai/
         const resp = await fetch(`${apiBase}${endpoint}`, { method: "POST", body: form });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-        preview.textContent = JSON.stringify(data, null, 2);
+        setElementText(preview, JSON.stringify(data, null, 2));
       } catch (e) {
-        preview.textContent = `解析失败：${e.message}`;
+        setElementText(preview, t("attachmentParseFail", { message: e.message }));
       }
     }
 
     function fillAdvisorPrompt() {
-      document.getElementById("q").value =
-        "按“核心能力（LangChain 能做什么）→ 典型用法 → Render 落地建议 → 下一步升级”的结构说明。";
+      document.getElementById("q").value = t("advisorPrompt");
     }
 
     function fillRagPrompt() {
-      document.getElementById("q").value =
-        "结合 RAG、Agent、Router、Streaming 的工程价值，给出落地优先级实例注意事项。";
+      document.getElementById("q").value = t("ragPrompt");
     }
 
     async function ask() {
@@ -1034,7 +1585,7 @@ permalink: /ai/
       const metaPanel = document.getElementById("metaPanel");
 
       if (!question) {
-        ans.textContent = "请先输入问题哦～";
+        setElementText(ans, t("questionMissing"));
         return;
       }
 
@@ -1078,10 +1629,10 @@ permalink: /ai/
         enable_router: routerToggle.checked
       };
 
-      statusText.textContent = "请求中...";
+      setElementText(statusText, t("statusRequesting"));
       dot.classList.add("loading");
       ans.textContent = "";
-      metaPanel.textContent = "元信息会显示在这里。";
+      setElementText(metaPanel, t("metaDefault"), true);
 
       try {
         let resp;
@@ -1128,30 +1679,49 @@ permalink: /ai/
           }
         } else {
           const data = await resp.json();
-          ans.textContent = data.answer ?? "(后端没有返回 answer 字段)";
+          setElementText(ans, data.answer ?? t("answerMissing"));
           if (data.meta) {
-            const ragInfo = data.meta.rag_docs ? ` | RAG 文档：${data.meta.rag_docs.join("、")}` : "";
-            const providerInfo = data.meta.provider ? ` | Provider：${data.meta.provider}` : "";
-            const routeInfo = data.meta.route_reason ? ` | 路由：${data.meta.route_reason}` : "";
-            const attachmentInfo = data.meta.attachment
-              ? ` | 附件：${data.meta.attachment.filename} (${data.meta.attachment.size_bytes}B)`
+            const ragInfo = data.meta.rag_docs
+              ? t("ragInfo", { docs: data.meta.rag_docs.join("、") })
               : "";
-            metaPanel.textContent =
-              `来源：${data.meta.source} | 缓存命中：${data.meta.cache_hit} | 延迟：${data.meta.latency_ms}ms${ragInfo}${providerInfo}${routeInfo}${attachmentInfo}`;
+            const providerInfo = data.meta.provider
+              ? t("providerInfo", { provider: data.meta.provider })
+              : "";
+            const routeInfo = data.meta.route_reason
+              ? t("routeInfo", { route: data.meta.route_reason })
+              : "";
+            const attachmentInfo = data.meta.attachment
+              ? t("attachmentInfo", {
+                name: data.meta.attachment.filename,
+                size: data.meta.attachment.size_bytes
+              })
+              : "";
+            setElementText(
+              metaPanel,
+              t("metaTemplate", {
+                source: data.meta.source,
+                cacheHit: data.meta.cache_hit,
+                latency: data.meta.latency_ms,
+                ragInfo,
+                providerInfo,
+                routeInfo,
+                attachmentInfo
+              })
+            );
           }
         }
 
-        statusText.textContent = "完成 ✅";
+        setElementText(statusText, t("statusDone"));
       } catch (e) {
-        statusText.textContent = "失败 ❌";
-        ans.textContent =
-          "请求失败：\n" + e.message +
-          "\n\n如果你在浏览器控制台看到 CORS 报错，需要后端放行 https://iehmltym.github.io";
+        setElementText(statusText, t("statusFail"));
+        setElementText(ans, t("corsHint", { message: e.message }));
       } finally {
         dot.classList.remove("loading");
       }
     }
 
+    setLanguage(currentLang);
+    setNightMode(storedTheme === "night");
     loadSessionId();
     loadCommands();
     loadBlueprint();
