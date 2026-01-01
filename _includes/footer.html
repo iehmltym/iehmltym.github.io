@@ -223,6 +223,7 @@
     // get nodes
     var $zh = document.querySelector(".zh");
     var $en = document.querySelector(".en");
+    var $ja = document.querySelector(".ja");
     var $select = document.querySelector("select");
 
     // Changes at v1.8.1: include lang flag as a url query. This interop well with catalog hash anchors.
@@ -235,35 +236,56 @@
     }
 
     // handle render
+    function getContainer(lang) {
+        var containers = {
+            zh: $zh,
+            en: $en,
+            ja: $ja
+        };
+        return containers[lang];
+    }
+
+    function setContainerActive(container, isActive) {
+        if (!container) {
+            return;
+        }
+        if (isActive) {
+            container.style.display = "block";
+            container.classList.add("active");
+        } else {
+            container.style.display = "none";
+            container.classList.remove("active");
+        }
+    }
+
     function _render() {
         var lang = getLang()
-        // en
-        if (lang == "en") {
-            $select.selectedIndex = 1;
-            $en.style.display = "block";
-            $en.classList.add("active");
-            $zh.style.display = "none";
-            $zh.classList.remove("active");
-            // default to zh-cn
-        } else {
-            $select.selectedIndex = 0;
-            $zh.style.display = "block";
-            $zh.classList.add("active");
-            $en.style.display = "none";
-            $en.classList.remove("active");
+        var defaultLang = $select.options[0].dataset.lang;
+
+        if (!lang || !getContainer(lang)) {
+            lang = defaultLang;
         }
+
+        for (var i = 0; i < $select.options.length; i++) {
+            if ($select.options[i].dataset.lang === lang) {
+                $select.selectedIndex = i;
+                break;
+            }
+        }
+
+        setContainerActive($zh, lang === "zh");
+        setContainerActive($en, lang === "en");
+        setContainerActive($ja, lang === "ja");
+
         // interop with catalog 
         generateCatalog(".catalog-body");
     }
 
     // handle select change
-    function onLanChange(index) {
-        if (index == 0) {
-            lang = "zh"
-        } else {
-            lang = "en"
+    function onLanChange(lang) {
+        if (lang) {
+            setLang(lang)
         }
-        setLang(lang)
     }
 
     // init
