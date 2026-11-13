@@ -21,7 +21,8 @@ concurrency:
 jobs:
   # 构建任务
   build:
-    runs-on: ubuntu-latest
+   #  runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # 检出代码
       - uses: actions/checkout@v4
